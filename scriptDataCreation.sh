@@ -8,5 +8,5 @@
 cp $PBS_O_WORKDIR/makeMatrix.py .
 cp $PBS_O_WORKDIR/csr.py .
 python makeMatrix.py > log.txt
-cp log.txt $PBS_O_WORKDIR
+cp *.txt $PBS_O_WORKDIR
 
