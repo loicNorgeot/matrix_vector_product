@@ -1,0 +1,20 @@
+matrix.o : matrix.cpp matrix.h
+	icpc -c matrix.cpp -fopenmp -O3
+
+vector.o : vector.cpp vector.h
+	icpc -c vector.cpp -fopenmp -O3
+
+linearsystem.o : linearsystem.cpp linearsystem.h
+	icpc -c linearsystem.cpp -fopenmp -O3
+
+csrmatrix.o : csrmatrix.cpp csrmatrix.h
+	icpc -c csrmatrix.cpp -g -fopenmp -O3
+
+fonctions_main.o : fonctions_main.cpp fonctions_main.h
+	icpc -c fonctions_main.cpp -g -fopenmp -O3
+
+main.o : main.cpp vector.h matrix.h linearsystem.h csrmatrix.h
+	icpc -c main.cpp -Wall -fopenmp -O3
+
+main : vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o main.o
+	icpc -o main vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o main.o -fopenmp -Wall -g -O3

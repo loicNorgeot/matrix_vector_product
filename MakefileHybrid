@@ -1,0 +1,20 @@
+matrix.o : matrix.cpp matrix.h
+	mpicxx -c matrix.cpp -fopenmp -O3 -g
+
+vector.o : vector.cpp vector.h
+	mpicxx -c vector.cpp -fopenmp -O3 -g
+
+linearsystem.o : linearsystem.cpp linearsystem.h
+	mpicxx -c linearsystem.cpp -fopenmp -O3 -g
+
+csrmatrix.o : csrmatrix.cpp csrmatrix.h
+	mpicxx -c csrmatrix.cpp -g -fopenmp -O3 -g
+
+fonctions_main.o : fonctions_main.cpp fonctions_main.h
+	mpicxx -c fonctions_main.cpp -g -fopenmp -O3 -g
+
+main.o : main.cpp vector.h matrix.h linearsystem.h csrmatrix.h
+	mpicxx -c main.cpp -Wall -fopenmp -O3 -g
+
+main : vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o main.o
+	mpicxx -o main vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o main.o -fopenmp -O3 -g
