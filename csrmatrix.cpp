@@ -6,7 +6,6 @@
 #include "csrmatrix.h"
 #include <string>
 #include "omp.h"
-#include "mpi.h"
 #include <vector>
 #include <string>
 #include <iterator>
@@ -321,40 +320,3 @@ Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs){
   return sol;
 }
 
-void mpiMult(const CSRMatrix& m, const Vector& v){
-  //Création du tableau de retour
-  double *sol=NULL;
-  sol = new double[m.mNumRows];
-  for(int i=0; i<m.mNumRows;i++){sol[i]=0.0;}
-
-  //Création des variables liées à MPI
-  const int s = MPI::COMM_WORLD.Get_size();
-  const int id = MPI::COMM_WORLD.Get_rank();
-  int chunk_size = (int) ceil(m.mNumRows/s);
-
-  //Calcul des bornes pour la décomposition MPI
-  int down, up;
-  if(id!=s-1){
-    down = id*chunk_size;
-    up = (id+1)*chunk_size;
-  }
-  else{
-    down = id*chunk_size;
-    up = m.mNumRows;
-  }
-  
-  //Calcul parallèle en OpenMP
-#pragma omp parallel for schedule(dynamic,100)
-  for(int i=down; i<up; i++){
-    double s_temp = 0.0;
-    for(int j=m.mIA[i]; j<m.mIA[i+1]; j++){
-      s_temp += m.mA[j]*v.Read(m.mJA[j]);
-    }
-    sol[i] = s_temp;
-  }
-
-  //Envoi du résultat au process 0
-  int tag = id;
-  MPI_Send(&sol, 1, MPI_INT, 0, tag, MPI::COMM_WORLD);
-  //return sol;
-}

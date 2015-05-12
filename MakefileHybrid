@@ -13,8 +13,8 @@ csrmatrix.o : csrmatrix.cpp csrmatrix.h
 fonctions_main.o : fonctions_main.cpp fonctions_main.h
 	mpicxx -c fonctions_main.cpp -g -fopenmp -O3 -g
 
-main.o : main.cpp vector.h matrix.h linearsystem.h csrmatrix.h
-	mpicxx -c main.cpp -Wall -fopenmp -O3 -g
+mainHybrid.o : mainHybrid.cpp vector.h matrix.h linearsystem.h csrmatrix.h
+	mpicxx -c mainHybrid.cpp -Wall -fopenmp -O3 -g
 
-main : vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o main.o
-	mpicxx -o main vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o main.o -fopenmp -O3 -g
+main : vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o mainHybrid.o
+	mpicxx -o main vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o mainHybrid.o -fopenmp -O3 -g

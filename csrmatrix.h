@@ -31,13 +31,11 @@ public:
   friend std::ostream& operator<<(std::ostream& output, const CSRMatrix& m); 
   friend Vector operator*(const CSRMatrix& m, const Vector& v);
   friend Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs);
-  friend void mpiMult(const CSRMatrix& m, const Vector& v);
 };
 
 //Prototypes des fonctions amies
 std::ostream& operator<<(std::ostream& output, const CSRMatrix& m);
 Vector operator*(const CSRMatrix& m, const Vector& v);
 Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs);
-void mpiMult(const CSRMatrix& m, const Vector& v);
 
 #endif
