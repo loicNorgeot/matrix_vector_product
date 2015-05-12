@@ -27,6 +27,7 @@ int main(){
   const int id = MPI::COMM_WORLD.Get_rank();
   int chunk_size = (int)( ceil(nR/s));
 
+  /*
   // Calcul des bornes pour la décomposition MPI
   int down, up;
   if(id!=s-1){
@@ -39,7 +40,7 @@ int main(){
   }
   cout << nR << endl;
   cout << "Rang " << id << ", lower = " << down << ", upper = " << up << endl; 
-  
+  */
 
   /*-------------------
     CALCUL DU PRODUIT
@@ -51,7 +52,7 @@ int main(){
 
   double *v_copy = NULL;
   v_copy = new double[nR];
-#pragma omp parallel for schedule(dynamic,8)
+#pragma omp parallel for schedule(dynamic,1000)
   for (int i = 0; i< nR; i++){
     v_copy[i] = V.Read(i);
   }
@@ -63,7 +64,7 @@ int main(){
   double tTot=0;
   
   // Calcul parallèle en OpenMP
-#pragma omp parallel for schedule(dynamic,8)
+#pragma omp parallel for schedule(dynamic,1000)
   for(int i=0; i<chunk_size; i++){
     double s_temp = 0;
     for(int j=M.GetIA(id*chunk_size+i); j<M.GetIA(id*chunk_size+i+1); j++){
