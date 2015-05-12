@@ -1,3 +1,7 @@
-Permet de tester le calcul parallèle en local et sur mesu.
+Sur mesu, dans le répertoire de travail:
 
-Procédures sur mesu:
+./execute.sh hybrid nMPI nTHREADS
+
+ou
+
+./execute.sh openmp nTHREADS
