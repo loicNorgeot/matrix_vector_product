@@ -294,26 +294,13 @@ Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs){
   const int nR = m.GetNumberOfRows();
   const int nnz = m.GetNNZ();
   Vector sol(nR);
-  double *a;
-  int *ia, *ja;
-  a = new double[nnz];
-  ia = new int[nR+1];
-  ja = new int[nnz];
-#pragma omp parallel for num_threads(nbProcs) schedule(dynamic,1000)
-  for(int i=0; i<nnz; i++){
-    a[i] = m.mA[i];
-    ja[i] = m.mA[i];
-  }
-#pragma omp parallel for num_threads(nbProcs) schedule(dynamic,1000)
-  for(int i=0; i<nR+1; i++){
-    ja[i] = m.mJA[i];
-  }
+
   //Début de la parallélisation
 #pragma omp parallel for num_threads(nbProcs) schedule(dynamic,1000)
   for(int i=0; i<nR; i++){
     double s_temp = 0.0;
-    for(int j=ia[i]; j<ia[i+1]; j++){
-      s_temp += a[j]*v.Read(ja[j]);
+    for(int j=m.mIA[i]; j<m.mIA[i+1]; j++){
+      s_temp += m.mA[j]*v.Read(m.mJA[j]);
     }
     sol[i] = s_temp;
   }

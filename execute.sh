@@ -22,11 +22,6 @@ then
     exit
 fi
 
-type="$1"
-nP="$2"
-echo "$type"
-echo "$nP"
-
 #Nettoyage
 rm *.txt
 rm main.o*
@@ -36,14 +31,20 @@ rm main
 rm *.o
 rm res.data
 
-#Chargement des modules
-module load mpt/2.11
-if [ "$1" = "openmp" ]; then module load intel-compilers-15/15.0.0.090; fi
-if [ "$1" = "hybrid" ]; then module load intel-mpi/5.0.1.035; fi
+#OpenMP
+if [ "$1" = "openmp" ]
+then
+    module load mpt/2.11
+    module load intel-compilers-15/15.0.0.090
+    make main -f MakefileOpenMP
+    qsub scriptOpenMP.sh
+fi
 
-#Compilation
-if [ "$1" = "hybrid" ]; then make main -f MakefileHybrid; fi
-if [ "$1" = "openmp" ]; then make main -f MakefileOpenMP; fi
-
-#Lancement sur mesu
-qsub script.sh
+#Hybride
+if [ "$1" = "hybrid" ]
+then
+    #module load intel-mpi/5.0.1.035
+    module load mpt/2.11
+    make main -f MakefileHybrid
+    qsub scriptHybrid.sh
+fi
