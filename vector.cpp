@@ -86,10 +86,11 @@ Vector::Vector(std::string fileName) {
   string dataPath = "/work/norgeot/";
   string varName = "SIZE";
   string SIZE(std::getenv(varName.c_str()));
+  string root = dataPath + "vector_" + SIZE;
 
   //Lecture du header
   std::string str;
-  std::ifstream infile((dataPath + "vector_" + SIZE + "_H.data").c_str());
+  std::ifstream infile((root + "_H.data").c_str());
   while(std::getline(infile, str)){
     std::vector<int> line = split<int>(str);
     mSize = line[0];}
@@ -97,7 +98,7 @@ Vector::Vector(std::string fileName) {
   //Lecture du vecteur
   FILE *vFile;
   mData = new double[mSize];
-  vFile=fopen((dataPath + "vector_" + SIZE + "_V.bin").c_str(),"rb");
+  vFile=fopen((root + "_V.bin").c_str(),"rb");
   if (!vFile){
     printf("Unable to open file!");
   }

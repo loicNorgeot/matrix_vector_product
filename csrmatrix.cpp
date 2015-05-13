@@ -202,9 +202,10 @@ CSRMatrix::CSRMatrix(std::string fileName){
   string dataPath = "/work/norgeot/";
   string varName = "SIZE";
   string SIZE(std::getenv(varName.c_str()));
+  string root = dataPath + "matrix_" + SIZE;
   
   //Lecture du header
-  ifstream infile((dataPath + "matrix_" + SIZE + "_H.data").c_str());
+  ifstream infile((root + "_H.data").c_str());
   string str;
   while(getline(infile, str)){
     vector<int> line = split<int>(str);
@@ -215,7 +216,7 @@ CSRMatrix::CSRMatrix(std::string fileName){
 
   //Lecture de IA
   mIA = new int[mNumRows + 1];
-  iaFile=fopen((dataPath + "matrix_" + SIZE + "_IA.bin").c_str(),"rb");
+  iaFile=fopen((root + "_IA.bin").c_str(),"rb");
   if (!iaFile){
     printf("Unable to open file!");
   }
@@ -224,7 +225,7 @@ CSRMatrix::CSRMatrix(std::string fileName){
 
   //Lecture de JA
   mJA = new int[mNNZ];
-  jaFile=fopen((dataPath + "matrix_" + SIZE + "_JA.bin").c_str(),"rb");
+  jaFile=fopen((root + "_JA.bin").c_str(),"rb");
   if (!jaFile){
     printf("Unable to open file!");
   }
@@ -233,7 +234,7 @@ CSRMatrix::CSRMatrix(std::string fileName){
 
   //Lecture de IA
   mA = new double[mNNZ];
-  aFile=fopen((dataPath + "matrix_" + SIZE + "_A.bin").c_str(),"rb");
+  aFile=fopen((root + "_A.bin").c_str(),"rb");
   if (!aFile){
     printf("Unable to open file!");
   }
@@ -294,19 +295,64 @@ Vector operator*(const CSRMatrix& m, const Vector& v){
 }
 
 Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs){
+  //Initialisation du temps
+  bool chrono = true;
+  ofstream log;
+  stringstream nameStream;
+  string name;
+  double t0=0, t1=0, t2=0, t3=0, t4=0, t5=0, t6=0, t7=0, t8=0;
+  if(chrono){
+    nameStream << "times" << nbProcs << ".txt";
+    name = nameStream.str();
+    log.open(name.c_str());
+  }
+
+  t0 = omp_get_wtime();
   const int nR = m.GetNumberOfRows();
   const int nnz = m.GetNNZ();
-  Vector sol(nR);
+  double *sol_temp;
+  sol_temp = new double[nR];
+  if(chrono){t1 = omp_get_wtime(); log << "1: " << t1 - t0 << endl;}
 
   //Début de la parallélisation
-#pragma omp parallel for num_threads(nbProcs) schedule(dynamic,1000)
-  for(int i=0; i<nR; i++){
-    double s_temp = 0.0;
-    for(int j=m.mIA[i]; j<m.mIA[i+1]; j++){
-      s_temp += m.mA[j]*v.Read(m.mJA[j]);
+#pragma omp parallel num_threads(nbProcs)
+  {
+    if((chrono)&&(omp_get_thread_num()==0)){t2 = omp_get_wtime(); log << "2: " << t2 -t1 << endl;}
+    //Initialisation d'une copie privée du vecteur 
+    double *v_copy=NULL;
+    v_copy = new double[nR];
+#pragma omp for schedule(dynamic,1000)
+    for(int i=0; i<nR; i++){
+      v_copy[i] = v.Read(i);
     }
-    sol[i] = s_temp;
+    if((chrono)&&(omp_get_thread_num()==0)){t3 = omp_get_wtime(); log << "3: " << t3 -t2 << endl;}
+
+    //Calcul parallèle du produit
+#pragma omp for schedule(dynamic,1000)
+    for(int i=0; i<nR; i++){
+      double s_temp = 0.0;
+      for(int j=m.mIA[i]; j<m.mIA[i+1]; j++){
+        s_temp += m.mA[j]*v_copy[m.mJA[j]];
+      }
+      sol_temp[i] = s_temp;
+    }
+    if((chrono)&&(omp_get_thread_num()==0)){t4 = omp_get_wtime(); log << "4: " << t4 -t3 << endl;}
+    
+    //Désallocation de la mémoire
+    delete[] v_copy;
+    if((chrono)&&(omp_get_thread_num()==0)){t5 = omp_get_wtime(); log << "5: " << t5 -t4 << endl;}
   }
+
+  if(chrono){t6 = omp_get_wtime(); log << "6: " << t6 -t5 << endl;}
+  //Création du vecteur de retour
+  Vector sol(nR);
+  for (int i = 0 ; i < nR ; i++){
+    sol[i] = sol_temp[i];
+  }
+  if(chrono){t7 = omp_get_wtime(); log << "7: " << t7 -t6 << endl;}
+
+  delete[] sol_temp;
+  if(chrono){t8 = omp_get_wtime(); log << "8: " << t8 -t7 << endl;}
   return sol;
 }
 
