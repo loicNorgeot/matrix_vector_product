@@ -11,6 +11,7 @@
 #include <iterator>
 #include <sstream>
 #include <fstream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -196,20 +197,25 @@ CSRMatrix::CSRMatrix(std::string fileName){
   // Méthode à partir de fichiers binaires
   // ----------------------------------------
   FILE *aFile, *iaFile, *jaFile;
-  std::string dataPath = "/work/norgeot/";
+
+  //Création des noms de fichiers
+  string dataPath = "/work/norgeot/";
+  string varName = "SIZE";
+  string SIZE(std::getenv(varName.c_str()));
+  
   //Lecture du header
-  std::string str;
-  std::ifstream infile("/work/norgeot/matrix_H.data");
-  while(std::getline(infile, str)){
-    std::vector<int> line = split<int>(str);
+  ifstream infile((dataPath + "matrix_" + SIZE + "_H.data").c_str());
+  string str;
+  while(getline(infile, str)){
+    vector<int> line = split<int>(str);
     mNumRows = line[0];
     mNNZ = line[1];
-    std::cout << mNNZ << " " << mNumRows << endl;
+    cout << mNNZ << " " << mNumRows << endl;
   }
 
   //Lecture de IA
   mIA = new int[mNumRows + 1];
-  iaFile=fopen("/work/norgeot/matrix_IA.bin","rb");
+  iaFile=fopen((dataPath + "matrix_" + SIZE + "_IA.bin").c_str(),"rb");
   if (!iaFile){
     printf("Unable to open file!");
   }
@@ -218,7 +224,7 @@ CSRMatrix::CSRMatrix(std::string fileName){
 
   //Lecture de JA
   mJA = new int[mNNZ];
-  jaFile=fopen("/work/norgeot/matrix_JA.bin","rb");
+  jaFile=fopen((dataPath + "matrix_" + SIZE + "_JA.bin").c_str(),"rb");
   if (!jaFile){
     printf("Unable to open file!");
   }
@@ -227,15 +233,12 @@ CSRMatrix::CSRMatrix(std::string fileName){
 
   //Lecture de IA
   mA = new double[mNNZ];
-  aFile=fopen("/work/norgeot/matrix_A.bin","rb");
+  aFile=fopen((dataPath + "matrix_" + SIZE + "_A.bin").c_str(),"rb");
   if (!aFile){
     printf("Unable to open file!");
   }
   fread(mA,sizeof(*mA),mNNZ,aFile);
   fclose(aFile);
-
-  //cout << mIA[mNumRows] << " " << mJA[mNNZ-1] << " " << mA[mNNZ-1] << endl;
-
 }
 
 //Un destructeur

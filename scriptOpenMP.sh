@@ -11,6 +11,7 @@ module load intel-compilers-15/15.0.0.090
 
 cp $PBS_O_WORKDIR/main .
 
+export SIZE=$size
 omplace -nt $nP ./main $nP > log.txt
 
 cp *.txt $PBS_O_WORKDIR

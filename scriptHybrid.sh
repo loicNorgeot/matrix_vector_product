@@ -11,6 +11,7 @@ module load mpt/2.11
 
 cp $PBS_O_WORKDIR/main .
 
+export SIZE=$size
 mpirun -np $nMPI omplace -nt $nOMP ./main > log.txt
 
 cp *.txt $PBS_O_WORKDIR

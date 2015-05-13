@@ -10,6 +10,8 @@
 #include "linearsystem.h"
 #include "fonctions_main.h"
 
+#include <cstdlib>
+
 using namespace std;
 
 int main(){
@@ -151,7 +153,6 @@ int main(){
   }
 
   delete[] sol;
-
   //Fin du programme
   MPI::Finalize();
   return 0;
