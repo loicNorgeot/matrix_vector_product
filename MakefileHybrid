@@ -1,20 +1,23 @@
+CXX=mpicxx
+FLAGS=-fopenmp -O3 -lm
+
 matrix.o : matrix.cpp matrix.h
-	mpicxx -c matrix.cpp -fopenmp -O3 -g
+	$(CXX) -c matrix.cpp $(FLAGS)
 
 vector.o : vector.cpp vector.h
-	mpicxx -c vector.cpp -fopenmp -O3 -g
+	$(CXX) -c vector.cpp $(FLAGS)
 
 linearsystem.o : linearsystem.cpp linearsystem.h
-	mpicxx -c linearsystem.cpp -fopenmp -O3 -g
+	$(CXX) -c linearsystem.cpp $(FLAGS)
 
 csrmatrix.o : csrmatrix.cpp csrmatrix.h
-	mpicxx -c csrmatrix.cpp -g -fopenmp -O3 -g
+	$(CXX) -c csrmatrix.cpp $(FLAGS)
 
 fonctions_main.o : fonctions_main.cpp fonctions_main.h
-	mpicxx -c fonctions_main.cpp -g -fopenmp -O3 -g
+	$(CXX) -c fonctions_main.cpp $(FLAGS)
 
 mainHybrid.o : mainHybrid.cpp vector.h matrix.h linearsystem.h csrmatrix.h
-	mpicxx -c mainHybrid.cpp -Wall -fopenmp -O3 -g
+	$(CXX) -c mainHybrid.cpp $(FLAGS)
 
 main : vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o mainHybrid.o
-	mpicxx -o main vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o mainHybrid.o -fopenmp -O3 -g
+	$(CXX) -o main vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o mainHybrid.o $(FLAGS)
