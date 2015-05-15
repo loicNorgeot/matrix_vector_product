@@ -1,20 +1,23 @@
+CXX=icpc
+FLAGS=-fopenmp -O3 -lm
+
 matrix.o : matrix.cpp matrix.h
-	icpc -c matrix.cpp -fopenmp -O3
+	$(CXX) -c matrix.cpp $(FLAGS)
 
 vector.o : vector.cpp vector.h
-	icpc -c vector.cpp -fopenmp -O3
+	$(CXX) -c vector.cpp $(FLAGS)
 
 linearsystem.o : linearsystem.cpp linearsystem.h
-	icpc -c linearsystem.cpp -fopenmp -O3
+	$(CXX) -c linearsystem.cpp $(FLAGS)
 
 csrmatrix.o : csrmatrix.cpp csrmatrix.h
-	icpc -c csrmatrix.cpp -g -fopenmp -O3
+	$(CXX) -c csrmatrix.cpp $(FLAGS)
 
 fonctions_main.o : fonctions_main.cpp fonctions_main.h
-	icpc -c fonctions_main.cpp -g -fopenmp -O3
+	$(CXX) -c fonctions_main.cpp $(FLAGS)
 
 mainOpenMP.o : mainOpenMP.cpp vector.h matrix.h linearsystem.h csrmatrix.h
-	icpc -c mainOpenMP.cpp -Wall -fopenmp -O3
+	$(CXX) -c mainOpenMP.cpp $(FLAGS)
 
 main : vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o mainOpenMP.o
-	icpc -o main vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o mainOpenMP.o -fopenmp -Wall -g -O3
+	$(CXX) -o main vector.o matrix.o linearsystem.o csrmatrix.o fonctions_main.o mainOpenMP.o $(FLAGS)
