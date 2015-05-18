@@ -5,7 +5,7 @@ import scipy as sc
 from scipy import sparse as sp
 import array
 
-dataFolder = "/work/attouche/"
+dataFolder = "/work/norgeot/"
 
 """""""""""""""""""""
        MATRICES
@@ -272,7 +272,7 @@ def createDataFiles(size, density, matrixFile = dataFolder + "matrix", vectorFil
     else:
         print "Taille trop importante"
 
-def newToOld(matrixFile, vectorFile, destMatrix = "/work/attouche/convertedMatrix.data", destVector = "/work/attouche/convertedVector.data"):
+def newToOld(matrixFile, vectorFile, destMatrix = "/work/norgeot/convertedMatrix.data", destVector = "/work/norgeot/convertedVector.data"):
     X, nR = getCSRVectorFromNewFormat(vectorFile)
     writeCSRVectorInOldFormat(X,destVector)
     del X
