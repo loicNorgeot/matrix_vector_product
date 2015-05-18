@@ -15,4 +15,3 @@ export SIZE=$size
 omplace -nt $nP ./main $nP > log.txt
 
 cp *.txt $PBS_O_WORKDIR
-cp *.data $PBS_O_WORKDIR

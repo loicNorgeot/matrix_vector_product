@@ -130,7 +130,7 @@ void launchParallelCSRProductOnRandomMatrix(int size, double ratio, int numProcs
 
 void launchParallelCSRProductOnData(int nP){
   //Initialisation
-  double nbIter = 10;
+  double nbIter = 1;
   CSRMatrix M("newMatrix.data");
   Vector V("newVector.data");
   cout << "Ouverture des fichiers terminée" << endl;

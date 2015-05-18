@@ -70,7 +70,7 @@ def speedupPlot(L):
     plt.grid(True)
     plt.title(u"Speed-up en fonction du nombre de coeurs")
     plt.grid(True)
-    plt.legend()
+    plt.legend(loc=2)
     plt.savefig('plot_speedup.jpg')
 
 fileList = getFileList(os.getcwd())
