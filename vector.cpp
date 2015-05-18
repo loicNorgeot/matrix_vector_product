@@ -1,8 +1,8 @@
-//Classe vecteur
+#include "vector.h"
+
 #include <cmath>
 #include <iostream>
 #include <cassert>
-#include "vector.h"
 #include <vector>
 #include <string>
 #include <iterator>
@@ -18,7 +18,7 @@ std::vector<T> split(const std::string& line) {
   return std::vector<T>(std::istream_iterator<T>(is), std::istream_iterator<T>());
 }
 
-//Constructeur de copie
+//Copy
 Vector::Vector(const Vector& otherVector){
   mSize = otherVector.GetSize();
   mData = new double[mSize];
@@ -27,7 +27,7 @@ Vector::Vector(const Vector& otherVector){
   }
 }
 
-//Constructeur en fonction de la taille
+//Size constructor
 Vector::Vector(int size){
   mData = NULL;
   assert(size>0);
@@ -38,7 +38,7 @@ Vector::Vector(int size){
   }
 }
 
-//Constructeur à partir d'un fichier
+//File constructor
 Vector::Vector(std::string fileName) {
   mData = NULL;
   //const std::string dataPath = "/work/norgeot/";
@@ -80,22 +80,21 @@ Vector::Vector(std::string fileName) {
   }
   */
 
-
-  //Méthode binaire
-  //Création des noms de fichiers
+  //Binary reading
+  //File names
   string dataPath = "/work/norgeot/";
   string varName = "SIZE";
   string SIZE(std::getenv(varName.c_str()));
   string root = dataPath + "vector_" + SIZE;
 
-  //Lecture du header
+  //Header reading
   std::string str;
   std::ifstream infile((root + "_H.data").c_str());
   while(std::getline(infile, str)){
     std::vector<int> line = split<int>(str);
     mSize = line[0];}
 
-  //Lecture du vecteur
+  //Vector reading
   FILE *vFile;
   mData = new double[mSize];
   vFile=fopen((root + "_V.bin").c_str(),"rb");
@@ -106,24 +105,28 @@ Vector::Vector(std::string fileName) {
   fclose(vFile);
 }
 
-//Destructeur
+//Destructor
 Vector::~Vector(){
   delete[] mData;
 }
 
-//Methode pour récupérer la taille
+//Size returns
 int Vector::GetSize() const{
   return mSize;
 }
+//Size with length
+int length(const Vector& v){
+  return v.mSize;
+}
 
-//Surcharge des [] pour l'indexation
+//[] for indexation
 double& Vector::operator[](int i){
   assert(i>-1);
   assert(i < mSize);
   return mData[i];
 }
 
-//Variante read only de l'opérateur bracket
+//read only bracket
 double Vector::Read(int i) const
 {
   assert(i > -1);
@@ -131,14 +134,14 @@ double Vector::Read(int i) const
   return mData[i];
 }
 
-//Surcharge des parenthèses pour un indexage à partir de 1:
+//Parenthesis for indexation from 1
 double& Vector::operator()(int i){
   assert(i>0);
   assert(i<mSize+1);
   return mData[i-1];
 }
 
-//Surcharge de l'opérateur =
+//Operator =
 Vector& Vector::operator=(const Vector& otherVector){
   assert(mSize == otherVector.mSize);
   for(int i=0;i<mSize;i++){
@@ -147,7 +150,7 @@ Vector& Vector::operator=(const Vector& otherVector){
   return *this;
 }
 
-//Surcharge de l'addition unitaire
+//+self
 Vector Vector::operator+() const{
   Vector v(mSize);
   for(int i=0; i<mSize;i++){
@@ -155,7 +158,8 @@ Vector Vector::operator+() const{
   }
   return v;
 }
-//Surcharge de la soustraction unitaire
+
+//-self
 Vector Vector::operator-() const{
   Vector v(mSize);
   for(int i=0; i<mSize;i++){
@@ -164,7 +168,7 @@ Vector Vector::operator-() const{
   return v;
 }
 
-//Surcharge de l'addition binaire
+//a+b
 Vector Vector::operator+(const Vector& v1) const{
   assert(mSize == v1.mSize);
   Vector v(mSize);
@@ -173,7 +177,7 @@ Vector Vector::operator+(const Vector& v1) const{
   }
   return v;
 }
-//Surcharge de la soustraction binaire
+//a-b
 Vector Vector::operator-(const Vector& v1) const{
   assert(mSize == v1.mSize);
   Vector v(mSize);
@@ -183,7 +187,7 @@ Vector Vector::operator-(const Vector& v1) const{
   return v;
 }
 
-//Surcharge de la multiplication par un scalaire
+//Scalar multiplication
 Vector Vector::operator*(double a) const{
   Vector v(mSize);
   for(int i=0;i<mSize;i++){
@@ -192,7 +196,7 @@ Vector Vector::operator*(double a) const{
   return v;
 }
 
-// Calcul de la norme euclidienne, p=2 par défaut
+// Euclidian norm
 double Vector::CalculateNorm(int p) const{
   double norm_val, sum = 0.0;
   for (int i=0; i<mSize; i++){
@@ -202,12 +206,7 @@ double Vector::CalculateNorm(int p) const{
   return norm_val;
 }
 
-//Retour de la taille avec length
-int length(const Vector& v){
-  return v.mSize;
-}
-
-//Print du vecteur en foncion de la taille
+//Printing
 std::ostream& operator<<(std::ostream& output, const Vector& v){
   std::string sep = " ";
   output << "(";

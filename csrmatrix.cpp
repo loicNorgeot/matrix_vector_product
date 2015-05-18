@@ -1,11 +1,13 @@
-//Classe matrice
+#include "matrix.h"
+#include "csrmatrix.h"
+#include "vector.h"
+
+#include "omp.h"
+
+#include <string>
 #include <cmath>
 #include <iostream>
 #include <cassert>
-#include "matrix.h"
-#include "csrmatrix.h"
-#include <string>
-#include "omp.h"
 #include <vector>
 #include <string>
 #include <iterator>
@@ -21,7 +23,7 @@ std::vector<T> split(const std::string& line) {
   return std::vector<T>(std::istream_iterator<T>(is), std::istream_iterator<T>());
 }
 
-//Constructeur de copie
+//Copy constructor
 CSRMatrix::CSRMatrix(const CSRMatrix& otherMatrix){
   mNNZ = otherMatrix.mNNZ;
   mNumRows = otherMatrix.GetNumberOfRows();
@@ -36,7 +38,7 @@ CSRMatrix::CSRMatrix(const CSRMatrix& otherMatrix){
   }
 }
 
-//Constructeur à partir d'une matrice de la classe Matrix
+//Matrix class constructor
 CSRMatrix::CSRMatrix(const Matrix& M){
   mNumRows = M.GetNumberOfRows();
   int mNumCols = M.GetNumberOfCols();
@@ -49,14 +51,13 @@ CSRMatrix::CSRMatrix(const Matrix& M){
   for(int i=0;i<mNumRows;i++){
     bool firstElt = true;
     for(int j=0;j<mNumCols;j++){
-      if(M.mData[i][j]!=0){//Si elt!=0
-	A[nnz] = M.mData[i][j];//On stocke l'elt
-	JA[nnz] = j;//On stocke l'indice colonne
-	if (firstElt){//Si c'est le premier de la ligne
-	  IA[i] = nnz;//On enregistre son rang dans la ligne
+      if(M.mData[i][j]!=0){//if elt!=0
+	A[nnz] = M.mData[i][j];//elt storingg
+	JA[nnz] = j;//col index storing
+	if (firstElt){//if first of the line
+	  IA[i] = nnz;//line index storing
 	  firstElt = false;
 	}
-	//On incrémente le NNZ
 	nnz++;
       }
       if(j==mNumCols-1){
@@ -65,19 +66,19 @@ CSRMatrix::CSRMatrix(const Matrix& M){
 	}
       }
     }
-    //On modifie la taille tu tableau A
+    //A array size modification
     double *tA = new double[nnz+size_inc];
     for (int k=0;k<nnz;k++){tA[k]=A[k];}
     delete[] A;
     A = tA;
-    //On modifie la taille tu tableau JA
+    //JA array size modification
     int *tJA = new int[nnz+size_inc];
     for (int k=0;k<nnz;k++){tJA[k]=JA[k];}
     delete[] JA;
     JA = tJA;
   }
   IA[mNumRows] = nnz;
-  //Enregistrement des variables
+  //variables recording
   mNNZ = nnz;
   mA = new double[mNNZ];
   mJA = new int[mNNZ];
@@ -90,9 +91,8 @@ CSRMatrix::CSRMatrix(const Matrix& M){
   }
 }
 
-//Constructeur à partir d'un fichier
+//File constructor
 CSRMatrix::CSRMatrix(std::string fileName){
-  //Initialisation des pointeurs
   mA = NULL;
   mIA = NULL;
   mJA = NULL;
@@ -194,18 +194,15 @@ CSRMatrix::CSRMatrix(std::string fileName){
 
 
   // ----------------------------------------
-  // Méthode à partir de fichiers binaires
+  //       Method from binary files
   // ----------------------------------------
   FILE *aFile, *iaFile, *jaFile;
-
-  //Création des noms de fichiers
   string dataPath = "/work/norgeot/";
-  //string dataPath = "./";
   string varName = "SIZE";
   string SIZE(std::getenv(varName.c_str()));
   string root = dataPath + "matrix_" + SIZE;
   
-  //Lecture du header
+  //Header reading
   ifstream infile((root + "_H.data").c_str());
   string str;
   while(getline(infile, str)){
@@ -215,7 +212,7 @@ CSRMatrix::CSRMatrix(std::string fileName){
     cout << mNNZ << " " << mNumRows << endl;
   }
 
-  //Lecture de IA
+  //IA
   mIA = new int[mNumRows + 1];
   iaFile=fopen((root + "_IA.bin").c_str(),"rb");
   if (!iaFile){
@@ -224,7 +221,7 @@ CSRMatrix::CSRMatrix(std::string fileName){
   fread(mIA,sizeof(*mIA),mNumRows + 1,iaFile);
   fclose(iaFile);
 
-  //Lecture de JA
+  //JA
   mJA = new int[mNNZ];
   jaFile=fopen((root + "_JA.bin").c_str(),"rb");
   if (!jaFile){
@@ -233,7 +230,7 @@ CSRMatrix::CSRMatrix(std::string fileName){
   fread(mJA,sizeof(*mJA),mNNZ,jaFile);
   fclose(jaFile);
 
-  //Lecture de A
+  //A
   mA = new double[mNNZ];
   aFile=fopen((root + "_A.bin").c_str(),"rb");
   if (!aFile){
@@ -243,46 +240,49 @@ CSRMatrix::CSRMatrix(std::string fileName){
   fclose(aFile);
 }
 
-//Un destructeur
+//Destructor
 CSRMatrix::~CSRMatrix(){
   delete[] mA;
   delete[] mIA;
   delete[] mJA;
 }
 
+//Private variable accessing
 int CSRMatrix::GetNNZ() const{return mNNZ;}
 int CSRMatrix::GetNumberOfRows() const{return mNumRows;}
 double CSRMatrix::GetA(int i) const{return mA[i];}
 int CSRMatrix::GetIA(int i) const{return mIA[i];}
 int CSRMatrix::GetJA(int i) const{return mJA[i];}
 
+//Print
 std::ostream& operator<<(std::ostream& output, const CSRMatrix& m){
-  //Print des valeurs (A) et des indices colonne (JA)
-  if(m.mNNZ<10){//Si moins de 10 elements
+  //Printing A and JA
+  if(m.mNNZ<10){//less than 10 elements
     cout << "\nA = ";
     for(int i =0; i<m.mNNZ;i++){cout<<m.mA[i]<<"; ";}
     cout << "\nJA = ";
     for(int i =0; i<m.mNNZ;i++){cout<<m.mJA[i]<<"; ";}
   }
-  else{//Si plus de 10 elements
+  else{//more than 10 elements
     cout << "\nA = ";
     cout<<m.mA[0]<<"; "<<m.mA[1]<<" ... "<<m.mA[m.mNNZ-2]<<"; "<<m.mA[m.mNNZ-1];
     cout << "\nJA = ";
     cout<<m.mJA[0]<<"; "<<m.mJA[1]<<" ... "<<m.mJA[m.mNNZ-2]<<"; "<<m.mJA[m.mNNZ-1];
   }
-  //Affichage de IA
-  if(m.mNumRows<10){//Si moins de 10 elements
+  //IA
+  if(m.mNumRows<10){//less than 10 elements
     cout << "\nIA = ";
     for(int i =0; i<m.mNumRows;i++){cout<<m.mIA[i]<<"; ";}
     cout << "/ " << m.mIA[m.mNumRows];
   }
-  else{//Si plus de 10 elements
+  else{//more than 10 elements
     cout << "\nIA = ";
     cout<<m.mIA[0]<<"; "<<m.mIA[1]<<" ... "<<m.mIA[m.mNumRows-2]<<"; "<<m.mIA[m.mNumRows-1];
     cout << "/ " << m.mIA[m.mNumRows];
   } 
 }
   
+//Sequential multiplication
 Vector operator*(const CSRMatrix& m, const Vector& v){
   Vector sol(m.mNumRows);
   for(int i=0; i<m.mNumRows; i++){
@@ -295,6 +295,7 @@ Vector operator*(const CSRMatrix& m, const Vector& v){
   return sol;
 }
 
+//Parallel multiplication
 Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs){
   const int nR = m.GetNumberOfRows();
   const int nnz = m.GetNNZ();
@@ -304,27 +305,26 @@ Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs){
   stringstream convert;
   convert << nbProcs;
   n_str = convert.str();
-  //Initialisation du nom du fichier résultat en fonction du nombre de coeurs
   string name = "times" + n_str + ".txt";
-  //Ouverture du fichier et écriture du header
   ofstream log;
   log.open(name.c_str());
 
-  //Début de la parallélisation
+  //Parallel part
 #pragma omp parallel num_threads(nbProcs)
   {
     int id = omp_get_thread_num();
     double t0=omp_get_wtime(), t1=0,t2=0,t3=0;
 
+    //V_copy initialization
     double *v_copy=NULL;
     v_copy = new double[nR];
 #pragma omp for schedule(auto)
     for(int i=0; i<nR; i++){
       v_copy[i] = v.Read(i);
     }
-
     if(id==0){t1 = omp_get_wtime(); log << "1: " << t1-t0 << endl;}
-    //Calcul parallèle du produit
+
+    //Product computation
 #pragma omp for schedule(auto)
     for(int i=0; i<nR; i++){
       double s_temp = 0.0;
@@ -333,6 +333,7 @@ Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs){
       }
       sol[i] = s_temp;
     }
+
     delete[] v_copy;
     if(id==0){t2 = omp_get_wtime(); log << "2: " << t2-t1 << endl;}
   }

@@ -1,13 +1,13 @@
-//Classe matrice
+#include "matrix.h"
+
 #include <cmath>
 #include <iostream>
 #include <cassert>
-#include "matrix.h"
 #include <string>
 
 using namespace std;
 
-//Constructeur de copie
+//Copy constructor
 Matrix::Matrix(const Matrix& otherMatrix){
   mNumRows = otherMatrix.GetNumberOfRows();
   mNumCols = otherMatrix.GetNumberOfCols();
@@ -22,7 +22,7 @@ Matrix::Matrix(const Matrix& otherMatrix){
   }
 }
 
-//Constructeur en fonction de la taille
+//Size constructor
 Matrix::Matrix(int rows, int cols){
   assert(rows>0);
   assert(cols>0);
@@ -39,7 +39,7 @@ Matrix::Matrix(int rows, int cols){
   }
 }
 
-//Destructeur
+//Destructor
 Matrix::~Matrix(){
   for(int i=0; i<mNumRows; i++){
     delete[] mData[i];
@@ -47,7 +47,7 @@ Matrix::~Matrix(){
   delete[] mData;
 }
 
-//Methode pour récupérer la taille
+//Size returning
 int Matrix::GetNumberOfRows() const{
   return mNumRows;
 }
@@ -55,7 +55,7 @@ int Matrix::GetNumberOfCols() const{
   return mNumCols;
 }
 
-//Surcharge des () pour l'indexation
+//Overloading parenthesis for indexation
 double& Matrix::operator()(int i, int j){
   assert(i>0);
   assert(j>0);
@@ -64,7 +64,7 @@ double& Matrix::operator()(int i, int j){
   return mData[i-1][j-1];
 }
 
-//Surcharge de l'opérateur =
+//Overloading =
 Matrix& Matrix::operator=(const Matrix& otherMatrix){
   assert(mNumRows == otherMatrix.mNumRows);
   assert(mNumCols == otherMatrix.mNumCols);
@@ -76,7 +76,7 @@ Matrix& Matrix::operator=(const Matrix& otherMatrix){
   return *this;
 }
 
-//Surcharge de l'addition unitaire
+//Overloading +self
 Matrix Matrix::operator+() const{
   Matrix m(mNumRows, mNumCols);
   for(int i=0;i<mNumRows;i++){
@@ -86,7 +86,7 @@ Matrix Matrix::operator+() const{
   }
   return m;
 }
-//Surcharge de la soustraction unitaire
+//Overloading -self
 Matrix Matrix::operator-() const{
   Matrix m(mNumRows, mNumCols);
   for(int i=0;i<mNumRows;i++){
@@ -97,7 +97,7 @@ Matrix Matrix::operator-() const{
   return m;
 }
 
-//Surcharge de l'addition binaire
+//Overloading binary addition
 Matrix Matrix::operator+(const Matrix& m) const{
   assert(mNumRows == m.mNumRows);
   assert(mNumCols == m.mNumCols);
@@ -109,7 +109,7 @@ Matrix Matrix::operator+(const Matrix& m) const{
   }
   return mat;
 }
-//Surcharge de la soustraction binaire
+//Overloading binary substraction
 Matrix Matrix::operator-(const Matrix& m) const{
   assert(mNumRows == m.mNumRows);
   assert(mNumCols == m.mNumCols);
@@ -122,7 +122,7 @@ Matrix Matrix::operator-(const Matrix& m) const{
   return mat;
 }
 
-//Surcharge de la multiplication par un scalaire
+//Scalar multiplication
 Matrix Matrix::operator*(double a) const{
   Matrix m(mNumRows, mNumCols);
   for(int i=0;i<mNumRows;i++){
@@ -133,7 +133,7 @@ Matrix Matrix::operator*(double a) const{
   return m;
 }
 
-// Calcul du déterminant de manière récursive, pour une matrice carrée
+//Determinant computation
 double Matrix::CalculateDeterminant() const{
   assert(mNumCols == mNumRows);
   double determinant = 0.0;
@@ -158,10 +158,10 @@ double Matrix::CalculateDeterminant() const{
   return determinant;
 }
 
-//Print de la matrice en foncion de la taille
+//Print
 std::ostream& operator<<(std::ostream& output, const Matrix& m){
+  //Classification according to number of rows, then number of cols
   std::string sep = " ";
-  //Pour moins de 10 lignes...
   if (m.mNumRows<10){
     if (m.mNumCols<10){
       for (int i=0; i<m.mNumRows;i++){
@@ -170,18 +170,16 @@ std::ostream& operator<<(std::ostream& output, const Matrix& m){
 	}
 	output << std::endl;
       }
-    }//... et moins de 10 colonnes on affiche tout
+    }
     else{
       for (int i=0; i<m.mNumRows;i++){
 	output << m.mData[i][0] << sep << m.mData[i][1] << " ... " << m.mData[i][m.mNumCols - 2] << sep << m.mData[i][m.mNumCols - 1];
 	output << std::endl;
       }
-    }//... et plus de 10 colonnes on met "..." horizontaux
+    }
   }
-    
-  //Pour plus de 10 lignes...
   else{
-    if (m.mNumCols<10){//... et moins de 10 colonnes on affiche toutes les colonnes mais juste les deux premieres et dernieres lignes
+    if (m.mNumCols<10){
       for (int i=0; i<2;i++){
 	for (int j=0; j<m.mNumCols;j++){
 	  output << m.mData[i][j] << sep;
@@ -196,7 +194,7 @@ std::ostream& operator<<(std::ostream& output, const Matrix& m){
 	output << std::endl;
       }
     }
-    else{//... et plus de 10 colonnes on met "..." horizontaux ET verticaux
+    else{
       for (int i=0; i<2;i++){
 	output << m.mData[i][0] << sep << m.mData[i][1] << "..." << m.mData[i][m.mNumCols-2] << sep << m.mData[i][m.mNumCols - 1];
 	output << std::endl;
@@ -210,7 +208,7 @@ std::ostream& operator<<(std::ostream& output, const Matrix& m){
   }
 }
 
-//Multiplication d'une matrice par un vecteur
+//Matrix vector multiplication
 Vector operator*(const Matrix& m, const Vector& v){
   int orig_size = v.GetSize();
   int new_size = m.GetNumberOfRows();
@@ -223,7 +221,8 @@ Vector operator*(const Matrix& m, const Vector& v){
   }
   return new_v;
 }
-// Multiplication d'un vecteur par une matrice
+
+// Vector matrix multiplication
 Vector operator *(const Vector& v, const Matrix& m)
 {
   int orig_size = v.GetSize();
