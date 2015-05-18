@@ -199,7 +199,7 @@ CSRMatrix::CSRMatrix(std::string fileName){
   FILE *aFile, *iaFile, *jaFile;
 
   //Création des noms de fichiers
-  string dataPath = "/work/norgeot/";
+  string dataPath = "/work/attouche/";
   //string dataPath = "./";
   string varName = "SIZE";
   string SIZE(std::getenv(varName.c_str()));

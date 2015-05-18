@@ -41,7 +41,7 @@ Vector::Vector(int size){
 //Constructeur à partir d'un fichier
 Vector::Vector(std::string fileName) {
   mData = NULL;
-  //const std::string dataPath = "/work/norgeot/";
+  //const std::string dataPath = "/work/attouche/";
 
   /*
   //Méthode sur une ligne
@@ -83,7 +83,7 @@ Vector::Vector(std::string fileName) {
 
   //Méthode binaire
   //Création des noms de fichiers
-  string dataPath = "/work/norgeot/";
+  string dataPath = "/work/attouche/";
   string varName = "SIZE";
   string SIZE(std::getenv(varName.c_str()));
   string root = dataPath + "vector_" + SIZE;

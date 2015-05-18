@@ -20,8 +20,8 @@ int main(){
   ---------------------*/
   MPI::Init();
   // Initialisation des variables
-  CSRMatrix M("/work/norgeot/matrix.data");
-  Vector V("/work/norgeot/vector.data");
+  CSRMatrix M("/work/attouche/matrix.data");
+  Vector V("/work/attouche/vector.data");
   const int nR = M.GetNumberOfRows();
 
   //Création des variables liées à MPI
