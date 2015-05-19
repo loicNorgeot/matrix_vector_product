@@ -77,14 +77,16 @@ int main(){
   /*----------------------------------------------
            Results reading from process  0
     ----------------------------------------------*/
-  // Final array initialization
-  double *final_res = NULL;
-  final_res = new double[nR];
-  for(int i = 0 ; i < nR ; i++){ 
-    final_res[i] = 0;
-  }
+  
 
   if(id==0){  
+    // Final array initialization
+    double *final_res = NULL;
+    final_res = new double[nR];
+    for(int i = 0 ; i < nR ; i++){ 
+      final_res[i] = 0;
+    }
+
     // Receiving incoming messages
     for(int i = 1 ; i < s; i++){
       MPI_Status status;

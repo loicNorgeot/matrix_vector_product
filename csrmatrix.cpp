@@ -318,14 +318,14 @@ Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs){
     //V_copy initialization
     double *v_copy=NULL;
     v_copy = new double[nR];
-#pragma omp for schedule(auto)
+#pragma omp for schedule(static,nR/nbProcs)
     for(int i=0; i<nR; i++){
       v_copy[i] = v.Read(i);
     }
     if(id==0){t1 = omp_get_wtime(); log << "1: " << t1-t0 << endl;}
 
     //Product computation
-#pragma omp for schedule(auto)
+#pragma omp for schedule(static,nR/nbProcs)
     for(int i=0; i<nR; i++){
       double s_temp = 0.0;
       for(int j=m.mIA[i]; j<m.mIA[i+1]; j++){
