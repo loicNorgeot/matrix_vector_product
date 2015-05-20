@@ -23,7 +23,7 @@ int main(){
 
   const int s = MPI::COMM_WORLD.Get_size();
   const int id = MPI::COMM_WORLD.Get_rank();
-  int chunk_size = (int)( ceil(nR/s));
+  const int chunk_size = (int)( ceil(nR/s));
 
   /*-------------------
     CALCUL DU PRODUIT
@@ -36,7 +36,7 @@ int main(){
   //v_copy creation
   double *v_copy = NULL;
   v_copy = new double[nR];
-#pragma omp parallel for schedule(dynamic,1000)
+#pragma omp parallel for schedule(static,chunk_size/8)
   for (int i = 0; i< nR; i++){
     v_copy[i] = V.Read(i);
   }
@@ -48,7 +48,7 @@ int main(){
   double tTot=0;
   
   // OpenMP parallel computation
-#pragma omp parallel for schedule(dynamic,1000)
+#pragma omp parallel for schedule(static,chunk_size/8)// firstprivate(v_copy)
   for(int i=0; i<chunk_size; i++){
     double s_temp = 0;
     for(int j=M.GetIA(id*chunk_size+i); j<M.GetIA(id*chunk_size+i+1); j++){
@@ -56,14 +56,15 @@ int main(){
     }
     sol[i] = s_temp;
   }
+  tf = omp_get_wtime() - t0;
+  cout << "Rang " << id << ": " << tf << " s." <<endl; 
   
   //Synchronization
-  tf = omp_get_wtime() - t0;
-  cout << "Temps d'éxécution pour le rang " << id << " = " << tf << " s." <<endl; 
   MPI_Barrier(MPI::COMM_WORLD);
   if(id==0){
     tTot = omp_get_wtime() - t0;
     cout << "Temps total d'éxécution = " << tTot << " s." << endl;
+    cout << "Chunk de taille " << chunk_size << " pour " << nR << " colonnes." << endl;
   }
   delete[] v_copy;
 

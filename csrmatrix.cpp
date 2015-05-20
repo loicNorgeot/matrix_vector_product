@@ -92,7 +92,7 @@ CSRMatrix::CSRMatrix(const Matrix& M){
 }
 
 //File constructor
-CSRMatrix::CSRMatrix(std::string fileName){
+CSRMatrix::CSRMatrix(std::string fileName, const int nbProcs){
   mA = NULL;
   mIA = NULL;
   mJA = NULL;
@@ -201,7 +201,7 @@ CSRMatrix::CSRMatrix(std::string fileName){
   string varName = "SIZE";
   string SIZE(std::getenv(varName.c_str()));
   string root = dataPath + "matrix_" + SIZE;
-  
+
   //Header reading
   ifstream infile((root + "_H.data").c_str());
   string str;
@@ -212,13 +212,20 @@ CSRMatrix::CSRMatrix(std::string fileName){
     cout << mNNZ << " " << mNumRows << endl;
   }
 
+  double *mAt=NULL;
+  mAt = new double[mNNZ];
+  int *mIAt=NULL;
+  mIAt = new int[mNumRows+1];
+  int *mJAt=NULL;
+  mJAt = new int[mNNZ];
+
   //IA
   mIA = new int[mNumRows + 1];
   iaFile=fopen((root + "_IA.bin").c_str(),"rb");
   if (!iaFile){
     printf("Unable to open file!");
   }
-  fread(mIA,sizeof(*mIA),mNumRows + 1,iaFile);
+  fread(mIAt,sizeof(*mIAt),mNumRows + 1,iaFile);
   fclose(iaFile);
 
   //JA
@@ -227,8 +234,9 @@ CSRMatrix::CSRMatrix(std::string fileName){
   if (!jaFile){
     printf("Unable to open file!");
   }
-  fread(mJA,sizeof(*mJA),mNNZ,jaFile);
+  fread(mJAt,sizeof(*mJAt),mNNZ,jaFile);
   fclose(jaFile);
+
 
   //A
   mA = new double[mNNZ];
@@ -236,8 +244,23 @@ CSRMatrix::CSRMatrix(std::string fileName){
   if (!aFile){
     printf("Unable to open file!");
   }
-  fread(mA,sizeof(*mA),mNNZ,aFile);
+  fread(mAt,sizeof(*mAt),mNNZ,aFile);
   fclose(aFile);
+
+  
+  
+#pragma omp parallel for schedule(static,mNumRows/nbProcs)
+  for (int i = 0 ; i < mNumRows; i++ ){
+    mIA[i] = mIAt[i];
+    for(int j=mIAt[i]; j<mIAt[i+1]; j++){
+      mA[j] = mAt[j];
+      mJA[j] = mJAt[j];
+    }
+  }
+  delete[] mIAt;
+  delete[] mJAt;
+  delete[] mAt;
+
 }
 
 //Destructor
@@ -313,19 +336,18 @@ Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs){
 #pragma omp parallel num_threads(nbProcs)
   {
     int id = omp_get_thread_num();
-    double t0=omp_get_wtime(), t1=0,t2=0,t3=0;
-
+    double t0=omp_get_wtime(), t1=0;
+    
     //V_copy initialization
     double *v_copy=NULL;
     v_copy = new double[nR];
-#pragma omp for schedule(static,nR/nbProcs)
+#pragma omp for schedule(static, nR/nbProcs)
     for(int i=0; i<nR; i++){
       v_copy[i] = v.Read(i);
     }
-    if(id==0){t1 = omp_get_wtime(); log << "1: " << t1-t0 << endl;}
 
     //Product computation
-#pragma omp for schedule(static,nR/nbProcs)
+#pragma omp for schedule(static, nR/nbProcs)
     for(int i=0; i<nR; i++){
       double s_temp = 0.0;
       for(int j=m.mIA[i]; j<m.mIA[i+1]; j++){
@@ -335,10 +357,11 @@ Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs){
     }
 
     delete[] v_copy;
-    if(id==0){t2 = omp_get_wtime(); log << "2: " << t2-t1 << endl;}
+    t1 = omp_get_wtime();
+    log << id << ": " << t1-t0 << endl;
   }
-  log.close();
 
+  log.close();
   return sol;
 }
 

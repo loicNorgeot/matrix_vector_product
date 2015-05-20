@@ -20,3 +20,22 @@ Sur mesu, dans le répertoire de travail:
 qsub -v nnz=10000 scriptDataCreation.sh
 
      nnz: nombre d'éléments non nuls dans la matrice
+
+
+Commandes utiles pour le suivi des jobs, après ssh uv:
+
+	  time -p dans les scripts de lancement, au tout début de la ligne de commande (avant omplace)
+
+	  qstat -a : permet de récupérer la SESSIONID
+	  
+	  wts SESSIONID -L : permet d'avoir, pour le job lancé, une liste des LWP (threads), pourcentages de CPU, numéros de processeurs...
+
+	  ckcpuset
+
+	  perf top -p LWP : permet de connaitre, pour un thread donné, les fonctions utilisées
+
+	  -vec-report=5 : flag de reporting pour les compilateurs intel, qui permet d'avoir un monitoring de la vectorisation
+
+	  
+
+	  

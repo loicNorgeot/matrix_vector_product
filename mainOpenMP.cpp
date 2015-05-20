@@ -19,7 +19,7 @@ int main(int argc, char* argv[]){
 
   //Initialization
   double nbIter = 1;
-  CSRMatrix M("newMatrix.data");
+  CSRMatrix M("newMatrix.data",nP);
   Vector V("newVector.data");
 
   //Do nP computations

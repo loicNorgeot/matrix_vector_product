@@ -18,7 +18,7 @@ public:
   //Un constructeur à partir d'une matrice de la classe Matrix
   CSRMatrix(const Matrix& M);
   //Un constructeur à partir d'un fichier (Cf CSRLoad.ipynb)
-  CSRMatrix(std::string fileName);
+  CSRMatrix(std::string fileName, const int nbProcs);
   //Un destructeur
   ~CSRMatrix();
 
