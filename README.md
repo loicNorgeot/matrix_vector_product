@@ -36,6 +36,10 @@ Commandes utiles pour le suivi des jobs, après ssh uv:
 
 	  -vec-report=5 : flag de reporting pour les compilateurs intel, qui permet d'avoir un monitoring de la vectorisation
 
+	  nodeinfo : Permet de savoir si les accès sont locaux ou distants
+
+	  top -u USERID : top sur les process de l'utilisateur
+
 	  
 
 	  
