@@ -1,16 +1,16 @@
 #!/bin/bash
 #
 
-#Teste que le premier argument soit "openmp" ou "hybrid"
-if [ "$1" != "openmp" ] && [ "$1" != "hybrid" ]
+#Teste que le premier argument soit "openmp" ou "hybrid" ou "conjugate"
+if [ "$1" != "openmp" ] && [ "$1" != "hybrid" ] && [ "$1" != "conjugate" ]
 then
-    echo "Error: First argument must be \"openmp\" or \"hybrid\""
+    echo "Error: First argument must be \"openmp\" or \"hybrid\" or \"conjugate\""
     exit
 fi
 
-#Si le premier argument est openmp, on attend deux arguments en plus
+#Si le premier argument est openmp OU CONJUGATE, on attend deux arguments en plus
 #On vérifie que le second argument soit un entier convenable
-if [ "$1" = "openmp" ]
+if [ "$1" = "openmp" ] || [ "$1" = "conjugate" ]
 then
     if [ "$#" != 3 ]
     then
@@ -66,6 +66,15 @@ then
     module load intel-compilers-15/15.0.0.090
     make main -f MakefileOpenMP
     qsub -v nP=$3,size=$2 -l select=1:ncpus=$3 scriptOpenMP.sh
+fi
+
+#CONJUGATE
+if [ "$1" = "conjugate" ]
+then
+    module load mpt/2.11
+    module load intel-compilers-15/15.0.0.090
+    make main -f MakefileTest
+    qsub -v nP=$3,size=$2 -l select=1:ncpus=$3 scriptTest.sh
 fi
 
 #Hybride
