@@ -5,4 +5,3 @@ rm \#*
 rm *.o
 rm *.o*
 rm *~
-rm main

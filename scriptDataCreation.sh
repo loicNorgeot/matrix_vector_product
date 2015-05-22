@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#PBS -l select=1:ncpus=1
-#PBS -l walltime=05:00:00
+#PBS -l select=1:ncpus=32
+#PBS -l walltime=06:00:00
 #PBS -N matrix_creation
 #PBS -j oe 
 
