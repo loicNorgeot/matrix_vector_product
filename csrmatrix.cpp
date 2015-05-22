@@ -51,11 +51,11 @@ CSRMatrix::CSRMatrix(const Matrix& M){
   for(int i=0;i<mNumRows;i++){
     bool firstElt = true;
     for(int j=0;j<mNumCols;j++){
-      if(M.mData[i][j]!=0){//if elt!=0
-	A[nnz] = M.mData[i][j];//elt storingg
-	JA[nnz] = j;//col index storing
-	if (firstElt){//if first of the line
-	  IA[i] = nnz;//line index storing
+      if(M.mData[i][j]!=0){
+	A[nnz] = M.mData[i][j];
+	JA[nnz] = j;
+	if (firstElt){
+	  IA[i] = nnz;
 	  firstElt = false;
 	}
 	nnz++;
@@ -77,8 +77,8 @@ CSRMatrix::CSRMatrix(const Matrix& M){
     delete[] JA;
     JA = tJA;
   }
+
   IA[mNumRows] = nnz;
-  //variables recording
   mNNZ = nnz;
   mA = new double[mNNZ];
   mJA = new int[mNNZ];
@@ -96,106 +96,6 @@ CSRMatrix::CSRMatrix(std::string fileName, const int nbProcs){
   mA = NULL;
   mIA = NULL;
   mJA = NULL;
-  //mX=NULL;
-
-  /*
-  // ----------------
-  //Méthode récente
-  // ----------------  
-  std::ifstream file(fileName.c_str());
-  std::string str; 
-  int line = 0;
-  while (std::getline(file, str)){
-    //On charge mNNZ et mA sur la ligne n°1, après le header
-    if(line == 1){
-      std::vector<double> vect = split<double>(str);
-      mNNZ = vect.size();
-      mA = new double[mNNZ];
-      for(int i=0;i<mNNZ;i++){
-        mA[i] = vect[i];
-      }
-    } 
-    //On charge mNumRows et mIA sur la ligne n°2
-    if(line == 2){
-      std::vector<int> vect = split<int>(str);
-      mNumRows = vect.size() - 1;
-      mIA = new int[mNumRows + 1];
-      for(int i=0;i<mNumRows + 1;i++){
-        mIA[i] = vect[i];
-      }
-    } 
-    //On charge mJA sur la dernière ligne
-    if(line == 3){
-      std::vector<int> vect = split<int>(str);
-      mJA = new int[mNNZ];
-      for(int i=0;i<mNNZ;i++){
-        mJA[i] = vect[i];
-      }
-    } 
-    //On incrémente le numéro de la ligne
-    line++;
-  }
-  */
-
-  /*
-  // -------------------
-  //Méthode de Pascal
-  // -------------------
-  std::ifstream file(fileName.c_str());
-  std::string str; 
-  int line = 0;
-
-  int IAbegin = 0;
-  int JAbegin = 0;
-  int Abegin = 0;
-  while (std::getline(file, str)){
-    // 1 - Initialisation du hachage grace au header du fichier
-    if (line == 0){
-      vector<int> vect = split<int>(str);
-      //Initialisation des valeurs et tableaux
-      mNNZ = vect[2];
-      mNumRows = vect[0];
-      mA = new double[mNNZ];
-      mIA = new int[mNumRows + 1];
-      mJA = new int[mNNZ];
-      //Initialisation des numéros de ligne pour le hachage
-      IAbegin = 3;
-      JAbegin = IAbegin + 1 + mNumRows/10;
-      if(mNNZ%10==0){Abegin = JAbegin + mNNZ/10;}
-      else{Abegin = JAbegin + 1 + mNNZ/10;}
-    }
-    // 2 - On charge les éléments de IA
-    if( (line >= IAbegin) && (line < JAbegin) ){
-      int I = line-IAbegin;
-      std::vector<int> vect = split<int>(str);
-      for(int j=0;j<vect.size();j++){
-        mIA[I*10+j] = vect[j];
-      }
-    }
-    // 3 - On charge les éléments de JA
-    if( (line >= JAbegin) && (line < Abegin) ){
-      int I = line-JAbegin;
-      std::vector<int> vect = split<int>(str);
-      for(int j=0;j<vect.size();j++){
-        mJA[I*10+j] = vect[j];
-      }
-    }
-    // 4 - On charge les éléments de A
-    if(line >= Abegin){
-      int I = line-Abegin;
-      std::vector<int> vect = split<int>(str);
-      for(int j=0;j<vect.size();j++){
-        mA[I*10+j] = vect[j];
-      }
-    }
-    //On incrémente le numéro de la ligne
-    line++;
-  }
-  */
-
-
-
-
   
   // ----------------------------------------
   //       Method from binary files
@@ -248,7 +148,6 @@ CSRMatrix::CSRMatrix(std::string fileName, const int nbProcs){
   mIA = new int[mNumRows + 1];
   mJA = new int[mNNZ];
   mA = new double[mNNZ];
-  //mX = new double[mNNZ*2];
 
 #pragma omp parallel for num_threads(nbProcs) schedule(static,mNumRows/nbProcs)
   for (int i = 0 ; i < mNumRows; i++ ){
@@ -257,8 +156,6 @@ CSRMatrix::CSRMatrix(std::string fileName, const int nbProcs){
     for(int j=mIA[i]; j<mIA[i+1]; j++){
       mA[j] = mAt[j];
       mJA[j] = mJAt[j];
-      //mX[2*j]=mAt[j];
-      //mX[2*j+1] = mJAt[j];
     }
   }
   delete[] mIAt;
@@ -443,7 +340,6 @@ Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs){
       double s_temp = 0.0;
       for(int j=m.mIA[i]; j<m.mIA[i+1]; j++){
 	s_temp += m.mA[j]*v_copy[m.mJA[j]];
-	//s_temp+= m.mX[2*j]*v.Read(m.mX[2*j+1]);
       }
       sol[i] = s_temp;
     }
