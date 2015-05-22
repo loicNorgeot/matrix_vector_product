@@ -1,7 +1,10 @@
 #include "matrix.h"
 #include "csrmatrix.h"
 #include "vector.h"
+#include "gc.h"
+
 #include "omp.h"
+
 #include <string>
 #include <cmath>
 #include <iostream>
@@ -14,11 +17,6 @@
 #include <cstdlib>
 
 using namespace std;
-
-//PROTOTYPES
-Vector GC(const CSRMatrix& A; const Vector& b, const int nP);
-double scal(const Vector& V1, const Vector& V2);
-
 
 Vector GC(const CSRMatrix& A; const Vector& b, const int nP){
   //PARAMETRES DU CALCUL
@@ -48,7 +46,7 @@ Vector GC(const CSRMatrix& A; const Vector& b, const int nP){
     g = g_new;
     h = -g + gamma * h;
     if( scal(g,g) < eps ){
-      break;
+      return X;
     }
   }
   return X;

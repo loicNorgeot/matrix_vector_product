@@ -1,0 +1,20 @@
+CXX=icpc
+FLAGS=-fopenmp -O3 -lm
+
+matrix.o : matrix.cpp matrix.h
+	$(CXX) -c matrix.cpp $(FLAGS)
+
+vector.o : vector.cpp vector.h
+	$(CXX) -c vector.cpp $(FLAGS)
+
+csrmatrix.o : csrmatrix.cpp csrmatrix.h
+	$(CXX) -c csrmatrix.cpp $(FLAGS)
+
+gc.o : gc.cpp gc.h
+	$(CXX) -c gc.cpp $(FLAGS)
+
+mainTest.o : mainTest.cpp vector.h matrix.h csrmatrix.h gc.h
+	$(CXX) -c mainTest.cpp $(FLAGS)
+
+main : vector.o matrix.o csrmatrix.o gc.o mainTest.o
+	$(CXX) -o main vector.o matrix.o csrmatrix.o gc.o mainTest.o $(FLAGS)
