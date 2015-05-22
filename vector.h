@@ -32,9 +32,6 @@ public:
   Vector operator+(const Vector& v1) const;
   Vector operator*(double a) const;
 
-  //Norme
-  double CalculateNorm(int p=2) const;
-
   //Fonctions amies
   friend int length(const Vector& v);
   friend std::ostream& operator<<(std::ostream& output, const Vector& v);

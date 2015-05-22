@@ -41,46 +41,7 @@ Vector::Vector(int size){
 //File constructor
 Vector::Vector(std::string fileName) {
   mData = NULL;
-  //const std::string dataPath = "/work/norgeot/";
-
-  /*
-  //Méthode sur une ligne
-  std::ifstream file(fileName.c_str());
-  std::string str; 
-  int line = 0;
-  while (std::getline(file, str)){
-    std::vector<double> vect = split<double>(str);
-    if(line == 1){
-      mSize = vect.size();
-      mData = new double[mSize];
-      for(int i=0;i<mSize;i++){
-        mData[i] = vect[i];
-      }
-    } 
-    line++;
-  }
-  */
-
-  /*
-  //Méthode sur plusieurs lignes
-  std::ifstream file(fileName.c_str());
-  std::string str; 
-  int line = 0;
-  while (std::getline(file, str)){
-    if(line==0){
-      std::vector<int> vect = split<int>(str);
-      mSize = vect[0];
-      mData = new double[mSize];
-    }
-    else{
-      std::vector<double> vect = split<double>(str);
-      mData[line-1] = vect[0];
-    }
-    line++;
-  }
-  */
-
-  //Binary reading
+  
   //File names
   string dataPath = "/work/norgeot/";
   string varName = "SIZE";
@@ -194,16 +155,6 @@ Vector Vector::operator*(double a) const{
     v[i]=a*mData[i];
   }
   return v;
-}
-
-// Euclidian norm
-double Vector::CalculateNorm(int p) const{
-  double norm_val, sum = 0.0;
-  for (int i=0; i<mSize; i++){
-    sum += pow(fabs(mData[i]), p);
-  }
-  norm_val = pow(sum, 1.0/((double)(p)));
-  return norm_val;
 }
 
 //Printing
