@@ -30,7 +30,7 @@ Commandes utiles pour le suivi des jobs, après ssh uv:
 	  
 	  wts SESSIONID -L : permet d'avoir, pour le job lancé, une liste des LWP (threads), pourcentages de CPU, numéros de processeurs...
 
-	  pmgcluster -t 10 : permet de suivre l'utilisation de MESU
+	  ckcpuset
 
 	  perf top -p LWP : permet de connaitre, pour un thread donné, les fonctions utilisées
 

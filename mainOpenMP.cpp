@@ -1,5 +1,4 @@
 #include "vector.h"
-#include "matrix.h"
 #include "csrmatrix.h"
 
 #include "omp.h"
@@ -13,18 +12,19 @@
 using namespace std;
 
 int main(int argc, char* argv[]){
-
-  //Number of processors recording
   const int nP = atoi(argv[1]);
+  double nbIter = 1;
 
   //Initialization
-  double nbIter = 1;
-  CSRMatrix M("newMatrix.data",nP);
-  Vector V("newVector.data");
+  string varName = "SIZE";
+  string SIZE(getenv(varName.c_str()));
+  string dataPath = "/work/norgeot/";
+  CSRMatrix M(dataPath + "matrix_" + SIZE, nP);
+  Vector V(dataPath + "vector_" + SIZE);
 
   //Do nP computations
   for(int n = 1; n<=nP; n++){
-    if((n==1)||(n==2)||(n==4)||(n==8)||(n==16)||(n==32)||(n==64)||(n==128)){
+    //if((n==1)||(n==2)||(n==4)||(n==8)||(n==16)||(n==32)||(n==64)||(n==128)){
       //Streams creation
       ofstream log;
       string n_str;
@@ -51,9 +51,22 @@ int main(int argc, char* argv[]){
 	//Time recording and writing
 	double final_time = omp_get_wtime() - start_time;
 	log << final_time << endl;
-      }   
+	}   
+
+      /*
+      if(n==nP){
+	ofstream res;
+	string resName = "res.data";
+	res.open(resName.c_str());
+	cout << result_vector[10] << endl;
+	for(int i = 0 ; i < M.GetNumberOfRows() ; i++){
+	  res << result_vector[i] << endl;
+	}
+	res.close();
+      }*/
+
       log.close();
-    }
+      //}
   }
 
   return 0;

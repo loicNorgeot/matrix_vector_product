@@ -13,9 +13,9 @@
 using namespace std;
 
 template<typename T>
-std::vector<T> split(const std::string& line) {
-  std::istringstream is(line);
-  return std::vector<T>(std::istream_iterator<T>(is), std::istream_iterator<T>());
+vector<T> split(const string& line) {
+  istringstream is(line);
+  return vector<T>(istream_iterator<T>(is), istream_iterator<T>());
 }
 
 //Copy
@@ -28,31 +28,25 @@ Vector::Vector(const Vector& otherVector){
 }
 
 //Size constructor
-Vector::Vector(int size){
+Vector::Vector(int size, double value){
   mData = NULL;
   assert(size>0);
   mSize = size;
   mData = new double[mSize];
   for (int i = 0; i<mSize; i++){
-    mData[i] = 0.0;
+    mData[i] = value;
   }
 }
 
 //File constructor
-Vector::Vector(std::string fileName) {
+Vector::Vector(string root) {
   mData = NULL;
-  
-  //File names
-  string dataPath = "/work/norgeot/";
-  string varName = "SIZE";
-  string SIZE(std::getenv(varName.c_str()));
-  string root = dataPath + "vector_" + SIZE;
 
   //Header reading
-  std::string str;
-  std::ifstream infile((root + "_H.data").c_str());
-  while(std::getline(infile, str)){
-    std::vector<int> line = split<int>(str);
+  string str;
+  ifstream infile((root + "_H.data").c_str());
+  while(getline(infile, str)){
+    vector<int> line = split<int>(str);
     mSize = line[0];}
 
   //Vector reading
@@ -71,38 +65,13 @@ Vector::~Vector(){
   delete[] mData;
 }
 
-//Size returns
-int Vector::GetSize() const{
-  return mSize;
-}
-//Size with length
-int length(const Vector& v){
-  return v.mSize;
-}
 
-//[] for indexation
-double& Vector::operator[](int i){
-  assert(i>-1);
-  assert(i < mSize);
-  return mData[i];
-}
+int Vector::GetSize() const{return mSize;}
 
-//read only bracket
-double Vector::Read(int i) const
-{
-  assert(i > -1);
-  assert(i < mSize);
-  return mData[i];
-}
+double& Vector::operator[](int i){return mData[i];}
 
-//Parenthesis for indexation from 1
-double& Vector::operator()(int i){
-  assert(i>0);
-  assert(i<mSize+1);
-  return mData[i-1];
-}
+double Vector::Read(int i) const{return mData[i];}
 
-//Operator =
 Vector& Vector::operator=(const Vector& otherVector){
   assert(mSize == otherVector.mSize);
   for(int i=0;i<mSize;i++){
@@ -111,7 +80,6 @@ Vector& Vector::operator=(const Vector& otherVector){
   return *this;
 }
 
-//+self
 Vector Vector::operator+() const{
   Vector v(mSize);
   for(int i=0; i<mSize;i++){
@@ -120,7 +88,6 @@ Vector Vector::operator+() const{
   return v;
 }
 
-//-self
 Vector Vector::operator-() const{
   Vector v(mSize);
   for(int i=0; i<mSize;i++){
@@ -129,7 +96,6 @@ Vector Vector::operator-() const{
   return v;
 }
 
-//a+b
 Vector Vector::operator+(const Vector& v1) const{
   assert(mSize == v1.mSize);
   Vector v(mSize);
@@ -138,7 +104,7 @@ Vector Vector::operator+(const Vector& v1) const{
   }
   return v;
 }
-//a-b
+
 Vector Vector::operator-(const Vector& v1) const{
   assert(mSize == v1.mSize);
   Vector v(mSize);
@@ -148,7 +114,6 @@ Vector Vector::operator-(const Vector& v1) const{
   return v;
 }
 
-//Scalar multiplication
 Vector Vector::operator*(double a) const{
   Vector v(mSize);
   for(int i=0;i<mSize;i++){
@@ -157,17 +122,31 @@ Vector Vector::operator*(double a) const{
   return v;
 }
 
-//Printing
-std::ostream& operator<<(std::ostream& output, const Vector& v){
-  std::string sep = " ";
-  output << "(";
-  if (v.mSize<10){
-    for (int i=0; i<v.mSize;i++){
-      output << v.mData[i] << sep;
-    }
+void Vector::operator+=(const Vector& v1){
+  assert(mSize == v1.mSize);
+  for(int i=0;i<mSize;i++){
+    mData[i] += v1.mData[i];
   }
-  else{
-    output << v.mData[0] << sep << v.mData[1] << " ... " << v.mData[v.mSize-2] << sep << v.mData[v.mSize - 1];
+}
+
+void Vector::operator-=(const Vector& v1){
+  assert(mSize == v1.mSize);
+  for(int i=0;i<mSize;i++){
+    mData[i] -= v1.mData[i];
   }
-  output << ")" << std::endl;
+}
+
+void Vector::operator*=(double a){
+  for(int i=0;i<mSize;i++){
+    mData[i] *= a;
+  }
+}
+
+double Vector::norm(){
+  double norm = 0.0;
+  for(int i=0;i<mSize;i++){
+    norm += mData[i] * mData[i];
+  }
+  norm = sqrt(norm);
+  return norm;
 }

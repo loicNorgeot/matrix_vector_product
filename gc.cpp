@@ -1,7 +1,7 @@
-#include "matrix.h"
 #include "csrmatrix.h"
 #include "vector.h"
 #include "gc.h"
+#include "matrix.h"
 
 #include "omp.h"
 
@@ -18,48 +18,127 @@
 
 using namespace std;
 
-Vector GC(const CSRMatrix& A; const Vector& b, const int nP){
-  //PARAMETRES DU CALCUL
-  int nI = 100;
-  double eps = 1e-5;
-
-  //INITIALISATION
-  int nR = A.GetNumberOfRows();
-  Vector X(nR);
-  Vector g(nR);
-  Vector h(nR);
-  for (int i = 0 ; i < nR ; i++){
-    X[i] = 1;
-  }
-  g = parMult(A,X,nP) - b;
-  h = -g;
-
-  //ALGORITHME DU GRADIENT CONJUGUE
-  for (int i = 0 ; i < nI ; i++){
-    Vector Ah(nR);
-    Ah = parMult(A,h,np);
-    double rau = scal(g, h) / scal(h, Ah);
-    X += rau * h;
-    Vector g_new(nR);
-    g_new = g + rau * Ah;
-    double gamma = scal(g_new, g_new) / scal(g, g);
-    g = g_new;
-    h = -g + gamma * h;
-    if( scal(g,g) < eps ){
-      return X;
-    }
-  }
-  return X;
-}
-
-
-double scal(const Vector& V1, const Vector& V2){
-  assert(V1.GetSize() == V2.GetSize());
-  n = V1.GetSize();
+double scal(const Vector& V1,
+	    const Vector& V2){
+  int n = V1.GetSize();
   double S = 0;
   for (int i = 0 ; i < n ; i++){
     S += V1.Read(i) * V2.Read(i);
   }
   return S;
 }
+
+double scalC(const Vector& V1,
+	     const Vector& V2,
+	     const Matrix& C){
+  Vector V = C * V1;
+  int n = V.GetSize();
+  double S = 0;
+  for (int i = 0 ; i < n ; i++){
+    S += V.Read(i) * V2.Read(i);
+  }
+  return S;
+}
+
+Vector GC(const CSRMatrix& A,
+	  const Vector& b,
+	  const int nP){
+
+  //PARAMETRES DU CALCUL
+  int nI = 100000;
+  double eps = 1e-5;
+  int nR = A.GetNumberOfRows();
+  Vector X(nR, 0.00000000000);
+
+  //MONITORING
+  ofstream log;
+  string n_str;
+  stringstream convert;
+  convert << nP;
+  n_str = convert.str();
+  string name = "TIME.txt";
+  log.open(name.c_str());
+  double t0=omp_get_wtime(), t1=0, t2=0, t3=0;
+
+  //INITIALISATION
+  Vector g = parMult(A, X, nP) - b;
+  Vector h = -g;  
+  Vector Ah(nR), g_new(nR);
+  double rau=0, gamma=0, r=0;
+
+  //ITERATIONS
+  for (int i = 0 ; i < nI ; i++){
+    for (int j = 0 ; j < nR ; j++){if (j%(nR/5) == 0){cout << X[j] << " "; }}
+    cout << endl;
+    t2=omp_get_wtime();
+    
+    Ah = parMult(A, h, nP);
+    rau = -scal(g, h)/scal(h, Ah);
+    X += h * rau;
+    g_new = g + Ah * rau;
+    gamma = scal(g_new, g_new)/scal(g, g);
+    g = g_new;
+    h = -g + h * gamma;
+    r = scal(g_new, g_new);
+    if( r < eps ){return X;}
+    
+    t3 = omp_get_wtime();
+    log << "Itération\t" << i << ": R =\t" << r << ", t =\t" << t3 - t2 << " s" << endl; 
+  }
+
+  //MONITORING
+  t1 = omp_get_wtime() - t0;
+  log << "Temps d'execution total =\t" << t1 << " s" << endl;
+  log.close();
   
+  return X;
+}
+
+//Gradient conjugué préconditionné par C
+Vector GCP(const CSRMatrix& A,
+	   const Vector& b,
+	   const Matrix& C,
+	   const int nP){
+
+  //PARAMETRES DU CALCUL
+  int nI = 100000;
+  double eps = 1e-5;
+  int nR = A.GetNumberOfRows();
+  Vector X(nR, 0.00000000000);
+
+  //MONITORING
+  ofstream log;
+  string n_str;
+  stringstream convert;
+  convert << nP;
+  n_str = convert.str();
+  string name = "TIME.txt";
+  log.open(name.c_str());
+  double t0=omp_get_wtime(), t1=0, t2=0, t3=0;
+
+  //INITIALISATION
+  Vector G = parMult(A, X, nP) - b;
+  Vector H = -C*G;  
+  Vector AH(nR), G_new(nR);
+  double rau=0, gamma=0, r=0;
+  
+  //ITERATIONS
+  for (int i = 0 ; i < nI ; i++){
+    for (int j = 0 ; j < nR ; j++){if (j%(nR/5) == 0){cout << X[j] << " "; }}
+    cout << endl;
+    t2=omp_get_wtime();
+    
+    AH = parMult(A, H, nP);
+    rau = -scal(G, H)/scal(H, AH);
+    X += H * rau;
+    G_new = G + AH * rau;
+    gamma = scalC(G_new, G_new, C) / scalC(G, G, C);
+    G = G_new;
+    H = -C*G + H * gamma;
+    r = scalC(G, G, C);
+    if( r < eps ){return X;}
+      
+    t3 = omp_get_wtime();
+    log << "Itération\t" << i << ": R =\t" << r << ", t =\t" << t3 - t2 << " s" << endl; 
+  }
+}

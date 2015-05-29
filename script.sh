@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#PBS -l walltime=06:00:00
+#PBS -l walltime=04:00:00
 #PBS -N main
 #PBS -j oe 
 
@@ -14,6 +14,8 @@ cp $PBS_O_WORKDIR/main .
 export SIZE=$size
 export KMP_AFFINITY=disabled
 
-/usr/bin/time -v omplace -nt $nP ./main $nP > log.txt
+#/usr/bin/time -v 
+omplace -nt $nP ./main $nP > log.txt
 
 cp *.txt $PBS_O_WORKDIR
+cp *.data $PBS_O_WORKDIR

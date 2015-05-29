@@ -7,17 +7,12 @@
 
 class Matrix{
 private:
-  //Les données stockées (dynamique) et la taille de la matrice
-  //Private pour ne modifier que par constructeur et méthodes
   double** mData;
   int mNumRows;
   int mNumCols;
 public:
-  //Un constructeur de copie
   Matrix(const Matrix& otherMatrix);
-  //Un constructeur par taille
   Matrix(int rows, int cols);
-  //Un destructeur
   ~Matrix();
 
   int GetNumberOfRows() const;
