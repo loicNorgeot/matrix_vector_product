@@ -1,17 +1,45 @@
-CXX=icpc
-FLAGS=-fopenmp -O3 -lm
+# http://gl.developpez.com/tutoriel/outil/makefile/
+#
+# Plusieurs Variables sont accessibles pour chaque règle:
+# 	    $< correspond au nom de la première dépendance d'une règle
+# 	    $@ correspond au nom de la cible
+# 	    $^ correspond à la liste des dépendances
+#
+# La cible .PHONY sert pour clean et mrproper
+# Toutes ses dépendances seront systématiquement reconstruites
+#
+# Paragraphe 6 : Construction automatique à partir des sources
 
-binaryIO.o : binaryIO.cpp binaryIO.h
-	$(CXX) -c binaryIO.cpp $(FLAGS)
+
+CXX=icpc
+CXXFLAGS=-fopenmp -O3 -lm
+EXEC=main
+
+all: $(EXEC)
+
+
+
+main : vector.o csrmatrix.o binaryIO.o mainOpenMP.o
+	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 vector.o : vector.cpp vector.h
-	$(CXX) -c vector.cpp $(FLAGS)
+	$(CXX) -c $< $(CXXFLAGS)
 
 csrmatrix.o : csrmatrix.cpp csrmatrix.h
-	$(CXX) -c csrmatrix.cpp $(FLAGS)
+	$(CXX) -c $< $(CXXFLAGS)
 
-mainOpenMP.o : mainOpenMP.cpp vector.h csrmatrix.h binaryIO.o
-	$(CXX) -c mainOpenMP.cpp $(FLAGS)
+binaryIO.o : binaryIO.cpp binaryIO.h
+	$(CXX) -c $< $(CXXFLAGS)
 
-main : vector.o csrmatrix.o mainOpenMP.o binaryIO.o
-	$(CXX) -o main vector.o csrmatrix.o mainOpenMP.o binaryIO.o $(FLAGS)
+mainOpenMP.o : mainOpenMP.cpp vector.h csrmatrix.h binaryIO.h
+	$(CXX) -c $< $(CXXFLAGS)
+
+
+
+.PHONY: clean mrproper
+
+clean:
+	rm -rf *.o
+
+mrproper: clean
+	rm -rf $(EXEC)	  
