@@ -142,6 +142,17 @@ void Vector::operator*=(double a){
   }
 }
 
+
+Vector Vector::inv() const{
+  Vector v(mSize);
+  for(int i=0;i<mSize;i++){
+    if(mData[i] != 0){
+      v[i] = 1.0 / mData[i];
+    }
+  }
+  return v;
+}
+
 double Vector::norm(){
   double norm = 0.0;
   for(int i=0;i<mSize;i++){

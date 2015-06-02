@@ -5,3 +5,4 @@ rm \#*
 rm *.o
 rm *.o*
 rm *~
+rm *.data

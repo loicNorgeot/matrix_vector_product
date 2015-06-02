@@ -40,10 +40,6 @@ Commandes utiles pour le suivi des jobs, après ssh uv:
 
 	  top -u USERID : top sur les process de l'utilisateur
 
-	  getconf -a : sort des informations système
-
-	  less /proc/meminfo : sort des infos mémoire
-
 	  
 
 	  

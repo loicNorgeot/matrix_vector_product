@@ -22,13 +22,7 @@ else
 fi
 
 #Nettoyage
-rm *.txt
-rm main.o*
-rm *#
-rm *~ 
-rm main
-rm *.o
-rm res.data
+./clean.sh
 
 module load mpt/2.11
 module load intel-compilers-15/15.0.0.090

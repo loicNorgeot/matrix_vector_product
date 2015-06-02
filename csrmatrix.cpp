@@ -1,6 +1,5 @@
 #include "csrmatrix.h"
 #include "vector.h"
-#include "matrix.h"
 
 #include "omp.h"
 
@@ -35,59 +34,6 @@ CSRMatrix::CSRMatrix(const CSRMatrix& otherMatrix){
     mJA[i] = otherMatrix.mJA[i];}
   for(int i =0; i<mNumRows+1; i++){
     mIA[i] = otherMatrix.mIA[i];
-  }
-}
-
-//Matrix class constructor
-CSRMatrix::CSRMatrix(const Matrix& M){
-  mNumRows = M.GetNumberOfRows();
-  int mNumCols = M.GetNumberOfCols();
-  int nnz = 0;
-  int size_inc = 1500;
-  double *A = new double[size_inc];
-  int IA[mNumRows+1];
-  int *JA = new int[size_inc];
-  
-  for(int i=0;i<mNumRows;i++){
-    bool firstElt = true;
-    for(int j=0;j<mNumCols;j++){
-      if(M.mData[i][j]!=0){
-	A[nnz] = M.mData[i][j];
-	JA[nnz] = j;
-	if (firstElt){
-	  IA[i] = nnz;
-	  firstElt = false;
-	}
-	nnz++;
-      }
-      if(j==mNumCols-1){
-	if(firstElt){
-	  IA[i]=0;
-	}
-      }
-    }
-    //A array size modification
-    double *tA = new double[nnz+size_inc];
-    for (int k=0;k<nnz;k++){tA[k]=A[k];}
-    delete[] A;
-    A = tA;
-    //JA array size modification
-    int *tJA = new int[nnz+size_inc];
-    for (int k=0;k<nnz;k++){tJA[k]=JA[k];}
-    delete[] JA;
-    JA = tJA;
-  }
-
-  IA[mNumRows] = nnz;
-  mNNZ = nnz;
-  mA = new double[mNNZ];
-  mJA = new int[mNNZ];
-  mIA = new int[mNumRows+1];
-  for(int i = 0; i<mNNZ; i++){
-    mA[i] = A[i];
-    mJA[i] = JA[i];}
-  for(int i =0; i<mNumRows+1; i++){
-    mIA[i] = IA[i];
   }
 }
 
@@ -166,6 +112,22 @@ CSRMatrix::~CSRMatrix(){
 //Private variable accessing
 unsigned int CSRMatrix::GetNNZ() const{return mNNZ;}
 int CSRMatrix::GetNumberOfRows() const{return mNumRows;}
+
+//Diagonalisation
+Vector CSRMatrix::toDiagonal() const{
+  Vector D(mNumRows);
+  double c = 0;
+  for(int i = 0 ; i < mNumRows ; i++){
+    for(unsigned int j = mIA[i] ; j < mIA[i+1] ; j++){
+      if(mJA[j] == i){
+	D[i] = mA[j];
+	c++;
+      }
+    }
+  }
+  cout << "Nombre d'éléments non nuls sur la diagonale = " << c << endl;
+  return D;
+}
   
 //Sequential multiplication
 Vector operator*(const CSRMatrix& m,

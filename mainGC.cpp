@@ -34,21 +34,15 @@ int main(int argc, char* argv[]){
   Vector B(dataPath + "vector_" + SIZE);
 
   //Gradient conjugué
-  Vector RGC = GC(A, B, nP);
-  writeVectorData(RGC, "GC.data");
-
-  /*
-  //Tests du produit
-  Vector X(B.GetSize(), 1.0);
-  Vector RES = parMult(A,X,nP);
-  writeVectorData(X, "x.data");
-  writeVectorData(B, "b.data");
-  writeVectorData(RES, "Ax.data");
-  //Tests du premier résidu
-  Vector Z(B.GetSize(), 0.9);
-  Vector residual = parMult(A,Z,nP) - B;
-  writeVectorData(residual, "residual.data");
-  */
+  
+  //Vector RGC = GC(A, B, nP);
+  //writeVectorData(RGC, "GC.data");
+  
+  //Gradient conjugué préconditionné par diagonale inverse
+  
+  Vector invDiag = (A.toDiagonal()).inv();
+  Vector RGCP = GCPDiag(A, B, invDiag, nP);
+  writeVectorData(RGCP, "test.data");
 
   return 0;
 }

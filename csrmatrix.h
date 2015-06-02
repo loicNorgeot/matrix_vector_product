@@ -12,14 +12,13 @@ private:
   unsigned int mNNZ;
   int mNumRows;
 public:
-  CSRMatrix(const CSRMatrix& otherMatrix);
   CSRMatrix(std::string root, const int nbProcs);
-  CSRMatrix(const Matrix& M);
   ~CSRMatrix();
 
   unsigned int GetNNZ() const;
   int GetNumberOfRows() const;
- 
+  Vector toDiagonal() const;
+
   friend Vector operator*(const CSRMatrix& m, const Vector& v);
   friend Vector parMult(const CSRMatrix& m, const Vector& v, const int nbProcs);
 };

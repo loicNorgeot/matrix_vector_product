@@ -31,6 +31,8 @@ public:
   void operator+=(const Vector& v1);
   void operator*=(double a);
   Vector operator*(double a) const;
+
+  Vector inv() const;
   double norm();
 };
 
