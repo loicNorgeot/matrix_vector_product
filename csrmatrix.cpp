@@ -1,5 +1,6 @@
 #include "csrmatrix.h"
 #include "vector.h"
+#include "binaryIO.h"
 
 #include "omp.h"
 
@@ -26,50 +27,24 @@ vector<T> split(const string& line) {
 //File constructor
 CSRMatrix::CSRMatrix(string root, 
 		     const int nbProcs){
+  //Variables
+  int nR=0, nnz=0;
+  getHeaderInfo(nR, nnz, "test");
+  mNumRows = nR;
+  mNNZ = nnz;
+  
+  //Initialisation
+  int *IAt = new int[nR + 1];
+  int *JAt = new int[nnz];
+  double *At = new double[nnz];
+
+  //Lecture binaire
+  brMatrix(IAt, JAt, At, nR, nnz, "test");
+
+  //First touch initialization
   mA = NULL;
   mIA = NULL;
   mJA = NULL;
-  
-  FILE *aFile, *iaFile, *jaFile;
-
-  //Header reading
-  ifstream infile((root + "_H.data").c_str());
-  string str;
-  while(getline(infile, str)){
-    vector<unsigned int> line = split<unsigned int>(str);
-    mNumRows = line[0];
-    mNNZ = line[1];
-  }
-
-  //Binary files reading
-  unsigned int *mIAt=NULL;
-  mIAt = new unsigned int[mNumRows+1];
-  iaFile=fopen((root + "_IA.bin").c_str(),"rb");
-  if (!iaFile){
-    printf("Unable to open file!");
-  }
-  fread(mIAt,sizeof(*mIAt),mNumRows + 1,iaFile);
-  fclose(iaFile);
-
-  int *mJAt=NULL;
-  mJAt = new int[mNNZ];
-  jaFile=fopen((root + "_JA.bin").c_str(),"rb");
-  if (!jaFile){
-    printf("Unable to open file!");
-  }
-  fread(mJAt,sizeof(*mJAt),mNNZ,jaFile);
-  fclose(jaFile);
-
-  double *mAt=NULL;
-  mAt = new double[mNNZ];
-  aFile=fopen((root + "_A.bin").c_str(),"rb");
-  if (!aFile){
-    printf("Unable to open file!");
-  }
-  fread(mAt,sizeof(*mAt),mNNZ,aFile);
-  fclose(aFile);
-
-  //First touch initialization
   mIA = new unsigned int[mNumRows + 1];
   mJA = new int[mNNZ];
   mA = new double[mNNZ];

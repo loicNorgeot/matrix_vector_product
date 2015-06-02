@@ -60,29 +60,33 @@ void bwMatrix(int *IA,
 	      double *A,
 	      int nR,
 	      int nnz,
+	      string outPath,
 	      string commonName){
   //Ecriture du header
   ofstream out;
-  out.open(("matrix_" + commonName + "_H.data").c_str());
+  string root = outPath + "matrix_" + commonName;
+  out.open((root + "_H.data").c_str());
   out << nR << " " << nnz;
   out.close();
   //Ecriture des tableaux
-  bwArray(IA, nR + 1, "matrix_" + commonName + "_IA.bin");
-  bwArray(JA, nnz, "matrix_" + commonName + "_JA.bin");
-  bwArray(A, nnz, "matrix_" + commonName + "_A.bin");
+  bwArray(IA, nR + 1, root + "_IA.bin");
+  bwArray(JA, nnz, root + "_JA.bin");
+  bwArray(A, nnz, root + "_A.bin");
 }
 
 //Ecriture d'un vecteur en format binaire
 void bwVector(double *V,
 	      int nR,
+	      string outPath,
 	      string commonName){
   //Ecriture du header
   ofstream out;
-  out.open(("vector_" + commonName + "_H.data").c_str());
+  string root = outPath + "vector_" + commonName;
+  out.open((root + "_H.data").c_str());
   out << nR;
   out.close();
   //Ecriture du vecteur
-  bwArray(V, nR, "vector_" + commonName + "_V.bin");
+  bwArray(V, nR, root + "_V.bin");
 }
 
 
@@ -124,17 +128,18 @@ void brArray(unsigned *& X,
 
 void getHeaderInfo(int& nR,
 		   int& nnz,
+		   string inPath,
 		   string commonName){
   int nRV = 0, nRM = 0;
   //Header du vecteur
-  ifstream infile(("vector_" + commonName + "_H.data").c_str());
+  ifstream infile((inPath + "vector_" + commonName + "_H.data").c_str());
   string str;
   while(getline(infile, str)){
     vector<int> line = split<int>(str);
     nRV = line[0];
   }
   //Header de la matrice
-  ifstream infileB(("matrix_" + commonName + "_H.data").c_str());
+  ifstream infileB((inPath + "matrix_" + commonName + "_H.data").c_str());
   string strB;
   while(getline(infileB, str)){
     vector<int> line = split<int>(str);
@@ -148,9 +153,10 @@ void getHeaderInfo(int& nR,
 
 void brVector(double *& V,
 	      int nR,
+	      string inPath,
 	      string commonName){
   V = new double[nR];
-  brArray(V, nR, "vector_" + commonName + "_V.bin");
+  brArray(V, nR, inPath + "vector_" + commonName + "_V.bin");
 }
 
 void brMatrix(int *& IA,
@@ -158,10 +164,11 @@ void brMatrix(int *& IA,
 	      double *& A,
 	      int nR,
 	      int nnz,
+	      string inPath,
 	      string commonName){
-  brArray(IA, nR + 1, "matrix_" + commonName + "_IA.bin");
-  brArray(JA, nnz, "matrix_" + commonName + "_JA.bin");
-  brArray(A, nnz, "matrix_" + commonName + "_A.bin");
+  brArray(IA, nR + 1, inPath + "matrix_" + commonName + "_IA.bin");
+  brArray(JA, nnz, inPath + "matrix_" + commonName + "_JA.bin");
+  brArray(A, nnz, inPath + "matrix_" + commonName + "_A.bin");
 }
 
 
@@ -192,8 +199,8 @@ void wTest(){
   }
 
   //Ecriture
-  bwMatrix(IA, JA, A, nR, nnz, "test");
-  bwVector(V, nR, "test");
+  bwMatrix(IA, JA, A, nR, nnz, "/home/norgeot/", "test");
+  bwVector(V, nR, "/home/norgeot/", "test");
 
   //Print
   cout << "Tests d'écriture:" << endl;
@@ -206,7 +213,7 @@ void wTest(){
 void rTest(){
   //Variables
   int nR=0, nnz=0;
-  getHeaderInfo(nR, nnz, "test");
+  getHeaderInfo(nR, nnz, "/home/norgeot/", "test");
 
   //Initialisation
   int *IA = new int[nR + 1];
@@ -215,8 +222,8 @@ void rTest(){
   double *V = new double[nR];
 
   //Lecture
-  brMatrix(IA, JA, A, nR, nnz, "test");
-  brVector(V, nR, "test");
+  brMatrix(IA, JA, A, nR, nnz, "/home/norgeot/", "test");
+  brVector(V, nR, "/home/norgeot/", "test");
 
   //Print
   cout << "Tests d'écriture:" << endl;
