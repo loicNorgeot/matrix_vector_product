@@ -53,18 +53,39 @@ void bwArray(unsigned int *X,
   fwrite(X,sizeof(*X), lX, file);
   fclose(file);
 }
+void bwArray(int *X,
+	     unsigned int lX,
+	     string fileName){
+  FILE *file = bwopen(fileName);
+  fwrite(X,sizeof(*X), lX, file);
+  fclose(file);
+}
+void bwArray(double *X,
+	     unsigned int lX,
+	     string fileName){
+  FILE *file = bwopen(fileName);
+  fwrite(X,sizeof(*X), lX, file);
+  fclose(file);
+}
+void bwArray(unsigned int *X,
+	     unsigned int lX,
+	     string fileName){
+  FILE *file = bwopen(fileName);
+  fwrite(X,sizeof(*X), lX, file);
+  fclose(file);
+}
 
 //Ecriture d'une matrice CSR en format binaire
-void bwMatrix(int *IA,
+void bwMatrix(unsigned int *IA,
 	      int *JA,
 	      double *A,
 	      int nR,
-	      int nnz,
+	      unsigned int nnz,
 	      string outPath,
-	      string commonName){
+	      string name){
   //Ecriture du header
   ofstream out;
-  string root = outPath + "matrix_" + commonName;
+  string root = outPath + "matrix_" + name;
   out.open((root + "_H.data").c_str());
   out << nR << " " << nnz;
   out.close();
@@ -78,10 +99,10 @@ void bwMatrix(int *IA,
 void bwVector(double *V,
 	      int nR,
 	      string outPath,
-	      string commonName){
+	      string name){
   //Ecriture du header
   ofstream out;
-  string root = outPath + "vector_" + commonName;
+  string root = outPath + "vector_" + name;
   out.open((root + "_H.data").c_str());
   out << nR;
   out.close();
@@ -97,6 +118,7 @@ void bwVector(double *V,
 
 //Ouverture d'un fichier binaire en lecture
 FILE * bropen(string fileName){
+  cout << fileName << ":" << endl;
   FILE *file;
   file = fopen(fileName.c_str(),"rb");
   assert(file);
@@ -125,26 +147,47 @@ void brArray(unsigned *& X,
   fread(X, sizeof(*X), lX, file);
   fclose(file);
 }
+void brArray(int *& X,
+	     unsigned int lX,
+	     string fileName){
+  FILE *file = bropen(fileName);
+  fread(X, sizeof(*X), lX, file);
+  fclose(file);
+}
+void brArray(double *& X,
+	     unsigned int lX,
+	     string fileName){
+  FILE *file = bropen(fileName);
+  fread(X, sizeof(*X), lX, file);
+  fclose(file);
+}
+void brArray(unsigned int *& X,
+	     unsigned int lX,
+	     string fileName){
+  FILE *file = bropen(fileName);
+  fread(X, sizeof(*X), lX, file);
+  fclose(file);
+}
 
 void getHeaderInfo(int& nR,
-		   int& nnz,
+		   unsigned int& nnz,
 		   string inPath,
-		   string commonName){
+		   string name){
   int nRV = 0, nRM = 0;
   //Header du vecteur
-  ifstream infile((inPath + "vector_" + commonName + "_H.data").c_str());
+  ifstream infile((inPath + "vector_" + name + "_H.data").c_str());
   string str;
   while(getline(infile, str)){
     vector<int> line = split<int>(str);
     nRV = line[0];
   }
   //Header de la matrice
-  ifstream infileB((inPath + "matrix_" + commonName + "_H.data").c_str());
+  ifstream infileB((inPath + "matrix_" + name + "_H.data").c_str());
   string strB;
   while(getline(infileB, str)){
     vector<int> line = split<int>(str);
     nRM = line[0];
-    nnz = line[1];
+    nnz = (unsigned int)line[1];
   }
   //Comparaison
   assert(nRM==nRV);
@@ -154,21 +197,21 @@ void getHeaderInfo(int& nR,
 void brVector(double *& V,
 	      int nR,
 	      string inPath,
-	      string commonName){
+	      string name){
   V = new double[nR];
-  brArray(V, nR, inPath + "vector_" + commonName + "_V.bin");
+  brArray(V, nR, inPath + "vector_" + name + "_V.bin");
 }
 
-void brMatrix(int *& IA,
+void brMatrix(unsigned int *& IA,
 	      int *& JA,
 	      double *& A,
 	      int nR,
-	      int nnz,
+	      unsigned int nnz,
 	      string inPath,
-	      string commonName){
-  brArray(IA, nR + 1, inPath + "matrix_" + commonName + "_IA.bin");
-  brArray(JA, nnz, inPath + "matrix_" + commonName + "_JA.bin");
-  brArray(A, nnz, inPath + "matrix_" + commonName + "_A.bin");
+	      string name){
+  brArray(IA, nR + 1, inPath + "matrix_" + name + "_IA.bin");
+  brArray(JA, nnz, inPath + "matrix_" + name + "_JA.bin");
+  brArray(A, nnz, inPath + "matrix_" + name + "_A.bin");
 }
 
 
@@ -177,13 +220,13 @@ void brMatrix(int *& IA,
 //     TESTS    #
 //###############
 
-void wTest(){
+void wExample(string outPath, string name){
   //Variables
   const int nR = 10;
-  const int nnz = 20;
+  const unsigned int nnz = 20;
   
   //Initialisation
-  int *IA = new int[nR + 1];
+  unsigned int *IA = new unsigned int[nR + 1];
   int *JA = new int[nnz];
   double *A = new double[nnz];
   double *V = new double[nR];
@@ -193,14 +236,14 @@ void wTest(){
   for(int i = 0 ; i < nR+1 ; i++){
     IA[i] = -i;
   }
-  for(int i = 0 ; i < nnz ; i++){
+  for(unsigned int i = 0 ; i < nnz ; i++){
     JA[i] = i;
     A[i] = i * 0.5;
   }
 
   //Ecriture
-  bwMatrix(IA, JA, A, nR, nnz, "/home/norgeot/", "test");
-  bwVector(V, nR, "/home/norgeot/", "test");
+  bwMatrix(IA, JA, A, nR, nnz, outPath, name);
+  bwVector(V, nR, outPath, name);
 
   //Print
   cout << "Tests d'écriture:" << endl;
@@ -210,20 +253,21 @@ void wTest(){
 }
 
 
-void rTest(){
+void rTest(string inPath, string name){
   //Variables
-  int nR=0, nnz=0;
-  getHeaderInfo(nR, nnz, "/home/norgeot/", "test");
+  int nR=0;
+  unsigned int nnz=0;
+  getHeaderInfo(nR, nnz, inPath, name);
 
   //Initialisation
-  int *IA = new int[nR + 1];
+  unsigned int *IA = new unsigned int[nR + 1];
   int *JA = new int[nnz];
   double *A = new double[nnz];
   double *V = new double[nR];
 
   //Lecture
-  brMatrix(IA, JA, A, nR, nnz, "/home/norgeot/", "test");
-  brVector(V, nR, "/home/norgeot/", "test");
+  brMatrix(IA, JA, A, nR, nnz, inPath, name);
+  brVector(V, nR, inPath, name);
 
   //Print
   cout << "Tests d'écriture:" << endl;

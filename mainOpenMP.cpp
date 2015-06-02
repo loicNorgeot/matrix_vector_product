@@ -19,8 +19,8 @@ int main(int argc, char* argv[]){
   string varName = "SIZE";
   string SIZE(getenv(varName.c_str()));
   string dataPath = "/work/norgeot/";
-  CSRMatrix M(dataPath + "matrix_" + SIZE, nP);
-  Vector V(dataPath + "vector_" + SIZE);
+  CSRMatrix M(dataPath, SIZE, nP);
+  Vector V(dataPath, SIZE);
 
   //Do nP computations
   for(int n = 1; n<=nP; n++){

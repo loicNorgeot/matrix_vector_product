@@ -6,25 +6,33 @@ using namespace std;
 
 //Ecriture
 FILE * bwopen(string fileName);
+//Surcharge
 void bwArray(int *X, int lX, string fileName);
 void bwArray(double *X, int lX, string fileName);
 void bwArray(unsigned int *X, int lX, string fileName);
+void bwArray(int *X, unsigned int lX, string fileName);
+void bwArray(double *X, unsigned int lX, string fileName);
+void bwArray(unsigned int *X, unsigned int lX, string fileName);
 //Wrappers
-void bwMatrix(int *IA, int *JA, double *A, int nR, int nnz, string outPath, string commonName);
-void bwVector(double *V, int nR, string outPath, string commonName);
+void bwMatrix(unsigned int *IA, int *JA, double *A, int nR, unsigned int nnz, string outPath, string name);
+void bwVector(double *V, int nR, string outPath, string name);
 
 //Lecture
 FILE * bropen(string fileName);
+//Surcharge
 void brArray(int *& X, int lX, string fileName);
 void brArray(double *& X, int lX, string fileName);
 void brArray(unsigned int *& X, int lX, string fileName);
+void brArray(int *& X, unsigned int lX, string fileName);
+void brArray(double *& X, unsigned int lX, string fileName);
+void brArray(unsigned int *& X, unsigned int lX, string fileName);
 //Wrappers
-void getHeaderInfo(int& nR, int& nnz, string inPath, string commonName);
-void brVector(double *& V, int nR, string inPath, string commonName);
-void brMatrix(int *& IA, int *& JA, double *& A, int nR, int nnz, string inPath, string commonName);
+void getHeaderInfo(int& nR, unsigned int& nnz, string inPath, string name);
+void brVector(double *& V, int nR, string inPath, string name);
+void brMatrix(unsigned int *& IA, int *& JA, double *& A, int nR, unsigned int nnz, string inPath, string name);
 
 //Tests
-void wTest();
-void rTest();
+void wTest(string outPath, string name);
+void rTest(string inPath, string name);
 
 #endif

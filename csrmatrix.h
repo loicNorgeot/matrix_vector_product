@@ -12,7 +12,7 @@ private:
   unsigned int mNNZ;
   int mNumRows;
 public:
-  CSRMatrix(std::string root, const int nbProcs);
+  CSRMatrix(std::string inPath, std::string name, const int nbProcs);
   ~CSRMatrix();
 
   unsigned int GetNNZ() const;

@@ -1,4 +1,5 @@
 #include "vector.h"
+#include "binaryIO.h"
 
 #include <cmath>
 #include <iostream>
@@ -39,25 +40,15 @@ Vector::Vector(int size, double value){
 }
 
 //File constructor
-Vector::Vector(string root) {
+Vector::Vector(string inPath, string name) {
   mData = NULL;
-
-  //Header reading
-  string str;
-  ifstream infile((root + "_H.data").c_str());
-  while(getline(infile, str)){
-    vector<int> line = split<int>(str);
-    mSize = line[0];}
-
-  //Vector reading
-  FILE *vFile;
-  mData = new double[mSize];
-  vFile=fopen((root + "_V.bin").c_str(),"rb");
-  if (!vFile){
-    printf("Unable to open file!");
-  }
-  fread(mData,sizeof(*mData),mSize,vFile);
-  fclose(vFile);
+  //Variables
+  int nR=0;
+  unsigned int nnz=0;
+  getHeaderInfo(nR, nnz, inPath, name);
+  mSize = nR;
+  mData = new double[nR];
+  brVector(mData, nR, inPath, name);
 }
 
 //Destructor

@@ -25,21 +25,23 @@ vector<T> split(const string& line) {
 
 
 //File constructor
-CSRMatrix::CSRMatrix(string root, 
+CSRMatrix::CSRMatrix(string inPath,
+		     string name,
 		     const int nbProcs){
   //Variables
-  int nR=0, nnz=0;
-  getHeaderInfo(nR, nnz, "test");
+  int nR=0;
+  unsigned int nnz=0;
+  getHeaderInfo(nR, nnz, inPath, name);
   mNumRows = nR;
   mNNZ = nnz;
   
   //Initialisation
-  int *IAt = new int[nR + 1];
+  unsigned int *IAt = new unsigned int[nR + 1];
   int *JAt = new int[nnz];
   double *At = new double[nnz];
 
   //Lecture binaire
-  brMatrix(IAt, JAt, At, nR, nnz, "test");
+  brMatrix(IAt, JAt, At, nR, nnz, inPath, name);
 
   //First touch initialization
   mA = NULL;
@@ -51,16 +53,16 @@ CSRMatrix::CSRMatrix(string root,
 
 #pragma omp parallel for num_threads(nbProcs) schedule(static,mNumRows/nbProcs)
   for (int i = 0 ; i < mNumRows; i++ ){
-    mIA[i] = mIAt[i];
-    mIA[i+1] = mIAt[i+1];
+    mIA[i] = IAt[i];
+    mIA[i+1] = IAt[i+1];
     for(unsigned int j=mIA[i]; j<mIA[i+1]; j++){
-      mA[j] = mAt[j];
-      mJA[j] = mJAt[j];
+      mA[j] = At[j];
+      mJA[j] = JAt[j];
     }
   }
-  delete[] mIAt;
-  delete[] mJAt;
-  delete[] mAt;
+  delete[] IAt;
+  delete[] JAt;
+  delete[] At;
 }
 
 //Destructor

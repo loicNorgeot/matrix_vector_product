@@ -30,8 +30,8 @@ int main(int argc, char* argv[]){
   string dataPath = "/work/norgeot/";
 
   //Initialisation des données
-  CSRMatrix A(dataPath + "matrix_" + SIZE, nP);
-  Vector B(dataPath + "vector_" + SIZE);
+  CSRMatrix A(dataPath, SIZE, nP);
+  Vector B(dataPath, SIZE);
 
   //Gradient conjugué
   

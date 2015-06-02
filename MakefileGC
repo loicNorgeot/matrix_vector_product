@@ -1,6 +1,9 @@
 CXX=icpc
 FLAGS=-fopenmp -O3 -lm
 
+binaryIO.o : binaryIO.cpp binaryIO.h
+	$(CXX) -c binaryIO.cpp $(FLAGS)
+
 vector.o : vector.cpp vector.h
 	$(CXX) -c vector.cpp $(FLAGS)
 
@@ -13,8 +16,8 @@ matrix.o : matrix.cpp matrix.h
 gc.o : gc.cpp gc.h
 	$(CXX) -c gc.cpp $(FLAGS)
 
-mainGC.o : mainGC.cpp vector.h csrmatrix.h gc.h matrix.h
+mainGC.o : mainGC.cpp vector.h csrmatrix.h gc.h matrix.h binaryIO.h
 	$(CXX) -c mainGC.cpp $(FLAGS)
 
-main : vector.o csrmatrix.o gc.o matrix.o mainGC.o
-	$(CXX) -o main vector.o csrmatrix.o gc.o matrix.o mainGC.o $(FLAGS)
+main : vector.o csrmatrix.o gc.o matrix.o mainGC.o binaryIO.o
+	$(CXX) -o main vector.o csrmatrix.o gc.o matrix.o mainGC.o binaryIO.o $(FLAGS)

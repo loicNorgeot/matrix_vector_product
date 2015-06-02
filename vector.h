@@ -14,7 +14,7 @@ private:
 public:
   Vector(const Vector& otherVector);
   Vector(int size, double value=0.0);
-  Vector(std::string root);
+  Vector(std::string inPath, std::string name);
   ~Vector();
 
   int GetSize() const;
