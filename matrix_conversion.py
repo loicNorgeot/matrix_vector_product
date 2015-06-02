@@ -3,37 +3,19 @@
 import numpy as np
 import os
 import array
+import matplotlib.pyplot as plt
 
-def readCSRMatrixFromOldFormat(fileName):
-    #Ouverture du fichier
-    with open(fileName) as f:
-        L = f.readlines()
-        print "Success opening the file"
 
-    #Interprétation et suppression des premières lignes
-    l0 = L[0].split(" ")
-    nRows = int(l0[0])
-    nCols = int(l0[1])
-    nnz = int(l0[2])
-    print nRows, nCols, nnz
-    L = L[3:]
+def getFiles():
+    bannedFiles=["nos3.dat"]
+    F = os.listdir(os.getcwd())
+    F = [f for f in F if ".dat" in f and '.data' not in f and f not in bannedFiles]
+    return F
 
-    #Enregistrement des indices colonne dans A des premiers non nuls de chaque ligne
-    IA = np.concatenate([[int(l) for l in L[i].split(" ")] for i in range(nRows/10)])
-    L = L[nRows/10:]
-    print "Après enregistrement de IA:\n", L[0], "\n"
-    
-    #Enregistrement des indices colonne de chaque non nuls
-    JA = np.concatenate([[int(l) for l in L[i].split(" ")] for i in range(nnz/10)])
-    L = L[nnz/10:]
-    print "Après enregistrement de JA:\n", L[0], "\n"
-
-    #Enregistrement des non nuls sous la forme de float
-    A = np.concatenate([[float(l) for l in L[i].split(" ")] for i in range(nnz/10)])
-    
-    print len(A), len(IA), len(IA)
-    return A, IA, JA
-
+def unique_rows(a):
+    a = np.ascontiguousarray(a)
+    unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
+    return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
 
 ######################################
 # LECTURE A PARTIR DU FORMAT HARWELL #
@@ -102,6 +84,72 @@ def writeBinaryVector(Vec,
     writeBinaryArray(Vec, path + "/vector_" + name + "_V.bin", dataType='d')
 
 
+###################################
+# CONVERSION EN DENSE ET SYMETRIE #
+###################################
+
+def symetrize(IA,
+              JA,
+              A,
+              sym = True,
+              plot = True):
+    nR = len(IA) - 1
+
+    #Création d'une matrice dense
+    MAT = []
+    for i in range(nR):
+        for j in range(IA[i], IA[i+1]):
+            k = JA[j]
+            MAT.append((i, k, A[j]))
+            if(sym):
+                MAT.append((k,i,A[j]))
+    MAT.sort()
+    MAT = unique_rows(MAT)
+
+    #Passage en CSR
+    ia = 0
+    IA = []
+    JA = []
+    A = []
+    ia_prev = -1
+    for i,m in enumerate(MAT):
+        ia = m[0]
+        if ia!=ia_prev:
+            IA.append(i)
+            ia_prev = ia
+        A.append(m[2])
+        JA.append(int(m[1]))
+    IA.append(len(JA))
+    IA = np.array(IA)
+    JA = np.array(JA)
+    A = np.array(A)
+
+    if(plot):
+        plt.figure(figsize=(12,12))
+        X = MAT[:,0]
+        Y = MAT[:,1]
+        Z = MAT[:,2]
+        if(len(X)!=len(Y)):
+            print len(X), len(Y)
+            print "ERREUR FATALE!!"
+        plt.scatter(X,
+                    -Y + np.max(Y),
+                    60,
+                    c=np.log10(Z),
+                    vmin = -0.5,
+                    vmax = 2.5,
+                    cmap='jet',
+                    alpha=0.3,
+                    lw=0)
+        plt.colorbar()
+        plt.xlim(0,len(IA))
+        plt.ylim(0,len(IA))
+        #plt.savefig(str(len(JA)) + '.jpg')
+        plt.savefig('toto.jpg')
+
+    return IA, JA, A
+
+
 #################
 # CREATION DE B #
 #################
@@ -121,7 +169,7 @@ def multiply(IA,
                 tmp += A[j] * X[JA[j]]
             V[i] = tmp
         except:
-            print i, k, JA[k]
+            print i, k, IA[i], IA[i+1], JA[k]
             print X[JA[k]]
             break
     return V
@@ -133,64 +181,73 @@ def multiply(IA,
 
 def HarwellToBinary(inFile,
                     inPath=os.getcwd(),
-                    outPath=os.getcwd()):
+                    outPath=os.getcwd(),
+                    sym=False):
     #Lecture
     file = inPath + "/" + inFile
     L = open(file,"r").readlines()
     name = inFile.split(".")[0]
+
     #Header
     nLIA, nLJA, nLA = readHeader(L)
+
     #Tableaux
     IA = linesToInt(L[4:], nLIA)
     JA = linesToInt(L[4+nLIA:], nLJA)
     A = linesToFloat(L[4+nLIA+nLJA:], nLA)
     JA-=1
     IA-=1
+
+    print "Taille de JA (=nnz) = " + str(len(JA))
+    print "Dernier IA (=nnz en theorie) = " + str(IA[-1])
+
+    if(sym):
+        IA, JA ,A = symetrize(IA,JA,A)
+    
     #Ecriture
     X = np.ones(len(IA)-1)
     V = multiply(IA, JA, A, X)
     writeBinaryVector(V, name, outPath)
     writeBinaryCSRMatrix(A, IA, JA, name, outPath)
 
+
 def PascalToBinary(inFileMatrix,
                    inFileVector,
                    inPath=os.getcwd(),
-                   outPath=os.getcwd()):
+                   outPath=os.getcwd(),
+                   sym=False):
     #Ouverture
     matrixFile = inPath + "/" + inFileMatrix
     L = open(matrixFile,'r').readlines()
+
     #Calcul du nombre de lignes pour chaque tableau
     nRows = int(L[0].split(" ")[0])
     nnz = int(L[0].split(" ")[2])
     nLIA = (nRows + 1)/10 + 1#Attention!!!! Pas correct pour les chiffres ronds!!!!!
     nLJA = nnz/10 + 1
     nLA = nnz/10 + 1
+
     #Lecture des tableaux
     IA = linesToInt(L[3:], nLIA)
     JA = linesToInt(L[3+nLIA:], nLJA)
     A = linesToFloat(L[3+nLIA+nLJA:], nLA)
     print len(IA), len(JA), len(A)
     print nRows, nnz
+
+    if sym:
+        IA, JA ,A = symetrize(IA,JA,A)
+
     #Ecriture des tableaux en binaire
     name = "pascal"
     writeBinaryCSRMatrix(A, IA, JA, name, outPath)
+
     #Lecture du vecteur
     vectorFile = inPath + "/" + inFileVector
     V = open(vectorFile, 'r').readlines()
     V = np.array([float(v) for v in V[1:]])
-    print len(V)
     #Ecriture du vecteur en binaire
     writeBinaryVector(V, name, outPath)
-
-PascalToBinary("matrix.data","vector.data", inPath="/home/loic/Documents/Lamia")
     
 
-#HarwellToBinary("s3dkq4m2.dat")
-#HarwellToBinary("s1rmq4m1.dat")
-#HarwellToBinary("36.dat")
-#HarwellToBinary("bcsstk09.dat")
-#HarwellToBinary("bcsstk04.dat")
-#HarwellToBinary("bcsstk01.dat")
-#HarwellToBinary("1138.dat")
-#HarwellToBinary("bcsstm23.dat")
-#HarwellToBinary("bcsstm01.dat")
+#HarwellToBinary("s3dkq4m2.dat", sym = True)
+PascalToBinary("matrix.data","vector.data", inPath="/home/loic/Documents/Lamia", sym=True)
