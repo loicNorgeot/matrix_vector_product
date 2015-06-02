@@ -2,6 +2,7 @@
 #include "vector.h"
 #include "gc.h"
 #include "matrix.h"
+#include "chrono.h"
 
 #include "omp.h"
 
@@ -179,28 +180,41 @@ Vector GCPDiag(const CSRMatrix& A,
   double t0=omp_get_wtime(), t1=0, t2=0, t3=0;
 
   //INITIALISATION
+  double t = omp_get_wtime();
+  int compteur = 0;
   Vector G = parMult(A, X, nP) - b;
+  t = chrono(t, compteur, "Initialisation de G");
   Vector H(nR);
   for (int i = 0 ; i < nR ; i++){ H[i] = - C.Read(i) * G.Read(i);}
+  t = chrono(t, compteur, "Initialisation de H");
   Vector AH(nR), G_new(nR);
   double rau=0, gamma=0, r=0;
   
   //ITERATIONS
   for (int i = 0 ; i < nI ; i++){
-    for (int j = 0 ; j < nR ; j++){if (j%(nR/5) == 0){cout << X[j] << " "; }}
-    cout << endl;
+    if(i==0){t = chrono(t, compteur, "Ouverture des itérations");}
+    if(i!=0){for (int j = 0 ; j < nR ; j++){if (j%(nR/5) == 0){cout << X[j] << " "; }}; cout << endl;}
     t2=omp_get_wtime();
+    if(i==0){t = chrono(t, compteur, "Enregistrement de X");}
     
     AH = parMult(A, H, nP);
+    if(i==0){t = chrono(t, compteur, "Produit A * H");}
     rau = -scal(G, H)/scal(H, AH);
+    if(i==0){t = chrono(t, compteur, "Calcul de rau");}
     X += H * rau;
+    if(i==0){t = chrono(t, compteur, "Actualisation de X");}
     G_new = G + AH * rau;
+    if(i==0){t = chrono(t, compteur, "Calcul de G_new");}
     gamma = scalC(G_new, G_new, C) / scalC(G, G, C);
+    if(i==0){t = chrono(t, compteur, "Calcul de gamma");}
     G = G_new;
     Vector cg(nR);
     for (int k = 0 ; k < nR ; k++){ cg[k] = C.Read(k) * G.Read(k);}
+    if(i==0){t = chrono(t, compteur, "Calcul de cg");}
     H = -cg + H * gamma;
+    if(i==0){t = chrono(t, compteur, "Actualisation de H");}
     r = scalC(G, G, C);
+    if(i==0){t = chrono(t, compteur, "Calcul de R");}
     if( r < eps ){return X;}
       
     t3 = omp_get_wtime();

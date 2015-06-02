@@ -118,7 +118,6 @@ void bwVector(double *V,
 
 //Ouverture d'un fichier binaire en lecture
 FILE * bropen(string fileName){
-  cout << fileName << ":" << endl;
   FILE *file;
   file = fopen(fileName.c_str(),"rb");
   assert(file);
@@ -253,7 +252,7 @@ void wExample(string outPath, string name){
 }
 
 
-void rTest(string inPath, string name){
+void rExample(string inPath, string name){
   //Variables
   int nR=0;
   unsigned int nnz=0;

@@ -1,6 +1,6 @@
 #ifndef CHRONOHEADERDEF
 #define CHRONOHEADERDEF
 
-double timeProbe(double t0, int& compteur, std::string message);
+double chrono(double t0, int& compteur, std::string message);
 
 #endif

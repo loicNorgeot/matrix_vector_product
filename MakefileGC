@@ -13,7 +13,7 @@
 CXX=icpc
 CXXFLAGS=-fopenmp -O3 -lm
 EXEC=main
-SRC= vector.cpp csrmatrix.cpp gc.cpp matrix.cpp binaryIO.cpp
+SRC= vector.cpp csrmatrix.cpp matrix.cpp gc.cpp binaryIO.cpp chrono.cpp
 OBJ= $(SRC:.cpp=.o)
 HEA= $(SRC:.cpp=.h)
 

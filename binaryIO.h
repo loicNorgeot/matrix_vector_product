@@ -32,7 +32,7 @@ void brVector(double *& V, int nR, string inPath, string name);
 void brMatrix(unsigned int *& IA, int *& JA, double *& A, int nR, unsigned int nnz, string inPath, string name);
 
 //Tests
-void wTest(string outPath, string name);
-void rTest(string inPath, string name);
+void wExample(string outPath, string name);
+void rExample(string inPath, string name);
 
 #endif
