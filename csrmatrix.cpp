@@ -22,20 +22,6 @@ vector<T> split(const string& line) {
   return vector<T>(istream_iterator<T>(is), istream_iterator<T>());
 }
 
-//Copy constructor
-CSRMatrix::CSRMatrix(const CSRMatrix& otherMatrix){
-  mNNZ = otherMatrix.mNNZ;
-  mNumRows = otherMatrix.GetNumberOfRows();
-  mA = new double[mNNZ];
-  mIA = new int[mNumRows+1];
-  mJA = new int[mNNZ];
-  for(int i = 0; i<mNNZ; i++){
-    mA[i] = otherMatrix.mA[i];
-    mJA[i] = otherMatrix.mJA[i];}
-  for(int i =0; i<mNumRows+1; i++){
-    mIA[i] = otherMatrix.mIA[i];
-  }
-}
 
 //File constructor
 CSRMatrix::CSRMatrix(string root, 
