@@ -8,44 +8,29 @@
 # La cible .PHONY sert pour clean et mrproper
 # Toutes ses dépendances seront systématiquement reconstruites
 #
-# Paragraphe 6 : Construction automatique à partir des sources
-
+# SRC = liste des sources, OBJ des .o et HEA des .h correspondants
 
 CXX=icpc
 CXXFLAGS=-fopenmp -O3 -lm
 EXEC=main
+SRC= vector.cpp csrmatrix.cpp gc.cpp matrix.cpp binaryIO.cpp
+OBJ= $(SRC:.cpp=.o)
+HEA= $(SRC:.cpp=.h)
 
 all: $(EXEC)
 
-
-
-main : vector.o csrmatrix.o gc.o matrix.o binaryIO.o mainGC.o
+main : $(OBJ) mainGC.o
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
-vector.o : vector.cpp vector.h
+%.o: %.cpp %.h
 	$(CXX) -c $< $(CXXFLAGS)
 
-csrmatrix.o : csrmatrix.cpp csrmatrix.h
+mainGC.o : mainGC.cpp $(HEA)
 	$(CXX) -c $< $(CXXFLAGS)
-
-gc.o : gc.cpp gc.h
-	$(CXX) -c $< $(CXXFLAGS)
-
-matrix.o : matrix.cpp matrix.h
-	 $(CXX) -c $< $(CXXFLAGS)	
-
-binaryIO.o : binaryIO.cpp binaryIO.h
-	$(CXX) -c $< $(CXXFLAGS)
-
-mainGC.o : mainGC.cpp vector.h csrmatrix.h gc.h matrix.h binaryIO.h
-	$(CXX) -c $< $(CXXFLAGS)
-
 
 
 .PHONY: clean mrproper
-
 clean:
 	rm -rf *.o
-
 mrproper: clean
 	rm -rf $(EXEC)	  
