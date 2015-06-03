@@ -17,9 +17,9 @@ public:
 
   //Constructors and destructors
   Matrix(const Matrix& otherMatrix);
+  Matrix(const Vector& V);
+  Matrix(int size);
   Matrix(int rows, int cols);
-  Matrix(int N, double val);
-  Matrix(const Vector& V)
   ~Matrix();
 
   //Private variables accessing
@@ -36,22 +36,35 @@ public:
   Matrix operator*(double a) const;
   Matrix operator*(const Matrix& m) const;
 
-  //Size modification, insertions...
-  void addRow();
+  //Appending
+  void delRow(int nRowsToDelete = 1);
+  void addRow(int nRowsToAdd = 1);
   void addRow(const Vector& newRow);
-  void addCol();
+  void delCol(int nColsToDelete = 1);
+  void addCol(int nColsToAdd = 1);
   void addRow(const Vector& newCol);
+  void resize(int newRows, int newCols);
+
+  //Extracting
+  Vector Matrix::row(int row);
+  Vector Matrix::col(int col);
 
   //Friend functions
+  //Identity
+  friend Matrix ID(int size, double val);
+  friend Matrix ID(const Vector& V);
+  //Vector multiplication
   friend Vector operator*(const Matrix& m, const Vector& v);
   friend Vector operator *(const Vector& v, const Matrix& m);
   
-  //Classe CSRmatrix définie comme amie pour avoir accès
+  //CSRMatrix class as a friend
   friend class CSRMatrix;
 
 };
 
 //Friend functions
+Matrix ID(int size, double val);
+Matrix ID(const Vector& V);
 Vector operator*(const Matrix& m, const Vector& v);
 Vector operator*(const Vector& v, const Matrix& m);
 
