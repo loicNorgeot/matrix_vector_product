@@ -1,58 +1,60 @@
-//Prend en argument le nombre de processeurs souhaités
-#include "omp.h"
-#include "binaryIO.h"
-#include "chrono.h"
-
 #include <string>
 #include <iostream>
 #include <string>
 #include <cstdlib>
 
+#include "omp.h"
+#include "binaryIO.h"
+#include "chrono.h"
+
 using namespace std;
 
 int main(int argc, char* argv[]){
+
+  ///////////////////////////////////////////
+  //Variables
 
   const int nP = atoi(argv[1]);
   string inPath = "/work/norgeot/";
   string varName = "SIZE";
   string name(getenv(varName.c_str()));
   double t = omp_get_wtime();
-  int compteur = 0;
+  int inc = 0;
 
-  // ----------------------------------------
-  //                LECTURE
-  // ----------------------------------------
-  //Déclaration et variables
+
+  ///////////////////////////////////////////
+  //READING
+
+  //Variables
   int nR = 0;
   unsigned int nnz = 0;
   getHeaderInfo(nR, nnz, inPath, name);
-  t = chrono(t, compteur, "Lecture du header");
+  t = chrono(t, inc, "Header reading");
 
-  //Initialisation
+  //Initialization
   unsigned int *IAt = new unsigned int[nR + 1];
   int *JAt = new int[nnz];
   double *At = new double[nnz];
   double *V = new double[nR];
-  t = chrono(t, compteur, "Initialisation des tableaux temporaires");
+  t = chrono(t, inc, "Temporary arrays declaration");
 
-  //Lecture
+  //Reading
   brMatrix(IAt, JAt, At, nR, nnz, inPath, name);
   brVector(V, nR, inPath, name);
-  t = chrono(t, compteur, "Lecture des fichiers binaires");
- 
-  //Définition du chunk
+  t = chrono(t, inc, "Temporary arrays reading");
   const int chunk = nR/nP;
 
-  // ----------------------------------------
-  //              FIRST TOUCH
-  // ----------------------------------------
-  //Initialisation
+
+  ///////////////////////////////////////////
+  //FIRST TOUCH INITIALIZATION
+
+  //Variables declaration
   unsigned int *IA = new unsigned int[nR + 1];
   int *JA = new int[nnz];
   double *A = new double[nnz];
-  t = chrono(t, compteur, "Initialisation des tableaux finaux");
+  t = chrono(t, inc, "Final arrays declaration");
 
-  //Initialisation en parallèle
+  //Parallel Initialization
 #pragma omp parallel for num_threads(nP) schedule(static, chunk)
   for (int i = 0 ; i < nR; i++ ){
     IA[i] = IAt[i];
@@ -62,33 +64,31 @@ int main(int argc, char* argv[]){
       JA[j] = JAt[j];
     }
   }
-  t = chrono(t, compteur, "First touch");
+  t = chrono(t, inc, "First touch Initialization");
 
-  //Desallocation
+  //Unallocation
   delete[] IAt;
   delete[] JAt;
   delete[] At;
-  t = chrono(t, compteur, "Désallocation des tableaux temporaires");
+  t = chrono(t, inc, "Temporary arrays unallocation");
 
-  // ----------------------------------------
-  //             PRODUIT
-  // ----------------------------------------
 
-  ///////////////////////////////////////////
-  //VERSION1
-  //Initialisation du résultat
+  /////////////////////////////////////////////////////:
+  //PRODUCT COMPUTATION
+
+  //Result declaration
   double *sol = new double[nR];
 
-  //Copie locale du vecteur
+  //Local copy
   double *v_copy=NULL;
   v_copy = new double[nR];
 #pragma omp for schedule(static, chunk)
   for(int i=0; i<nR; i++){
     v_copy[i] = V[i];
   }
-  t = chrono(t, compteur, "Copie locale du vecteur");
+  t = chrono(t, inc, "Vector local copy");
 
-  //Calcul du produit
+  //Actual computation
 #pragma omp parallel for num_threads(nP) schedule(static, chunk) firstprivate(v_copy)
   for(int i=0; i<nR; i++){
     double s_temp = 0.0;
@@ -97,21 +97,24 @@ int main(int argc, char* argv[]){
     }
     sol[i] = s_temp;
   }
-  t = chrono(t, compteur, "Produit parallèle");
+  t = chrono(t, inc, "Parallel product");
   delete[] v_copy;
 
-  // ----------------------------------------
-  //             NETTOYAGE
-  // ----------------------------------------
+
+  ////////////////////////////////////////////////////////////::
+  //CLEANING
+
   delete[] V;
   delete[] A;
   delete[] IA;
   delete[] JA;
-  t = chrono(t, compteur, "Désallocation finale");
+  t = chrono(t, inc, "Final unallocation");
 
-  // ----------------------------------------
-  //             AFFICHAGE
-  // ----------------------------------------
+
+  ////////////////////////////////////////////////////////////::
+  //PRINTING
+
   cout << "SOL = " << sol[0] << ", " << sol[1] << " ... " << sol[nR-2] << ", " << sol[nR-1] << endl;
   delete[] sol;
+
 }

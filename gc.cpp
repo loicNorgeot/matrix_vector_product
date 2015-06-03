@@ -1,93 +1,63 @@
+#include <string>
+#include <iostream>
+#include <string>
+#include <cstdlib>
+
 #include "csrmatrix.h"
-#include "vector.h"
-#include "gc.h"
 #include "matrix.h"
+#include "vector.h"
 #include "chrono.h"
+#include "gc.h"
 
 #include "omp.h"
 
-#include <string>
-#include <cmath>
-#include <iostream>
-#include <cassert>
-#include <vector>
-#include <string>
-#include <iterator>
-#include <sstream>
-#include <fstream>
-#include <cstdlib>
-
 using namespace std;
 
-double scal(const Vector& V1,
-	    const Vector& V2){
-  int n = V1.GetSize();
-  double S = 0;
-  for (int i = 0 ; i < n ; i++){
-    S += V1.Read(i) * V2.Read(i);
-  }
-  return S;
+
+///////////////////////////////////////////
+//SCALAR PRODUCTS
+
+//With Preconditionner, Vector Object
+double scalC(const Vector& v1,
+	    const Vector& v2,
+	    const Vector& C){
+  return scalProduct(vectProduct(C,v1), v2);
 }
 
-double scalC(const Vector& V1,
-	     const Vector& V2,
-	     const Matrix& C){
-  Vector V = C * V1;
-  int n = V.GetSize();
-  double S = 0;
-  for (int i = 0 ; i < n ; i++){
-    S += V.Read(i) * V2.Read(i);
-  }
-  return S;
+//With Preconditionner, Matrix Object
+double scalC(const Vector& v1,
+	    const Vector& v2,
+	    const Matrix& C){
+  return scalProduct(C*v1, v2);
 }
 
-double scalC(const Vector& V1,
-	     const Vector& V2,
-	     const Vector& C){
-  int n = V1.GetSize();
-  Vector V(n);
-  for (int i = 0 ; i < n ; i++){V[i] = C.Read(i) * V1.Read(i);}
-  
-  double S = 0;
-  for (int i = 0 ; i < n ; i++){
-    S += V.Read(i) * V2.Read(i);
-  }
-  return S;
+//Without Preconditionner
+double scal(const Vector& v1,
+	    const Vector& v2){
+  return scalProduct(v1,v2);
 }
 
+
+///////////////////////////////////////////
+//CONJUGATE GRADIENT
+
+//Classical, no preconditionning
 Vector GC(const CSRMatrix& A,
 	  const Vector& b,
 	  const int nP){
-
-  //PARAMETRES DU CALCUL
+  //Parameters
   int nI = 10000;
   double eps = 1e-5;
   int nR = A.GetNumberOfRows();
   Vector X(nR, 0.00000000000);
-
-  //MONITORING
-  ofstream log;
-  string n_str;
-  stringstream convert;
-  convert << nP;
-  n_str = convert.str();
-  string name = "TIME.txt";
-  log.open(name.c_str());
-  double t0=omp_get_wtime(), t1=0, t2=0, t3=0;
-
-  //INITIALISATION
-  Vector g = parMult(A, X, nP) - b;
+  //Initialization
+  Vector g = A.parallelProduct(X, nP) - b;
   Vector h = -g;  
   Vector Ah(nR), g_new(nR);
   double rau=0, gamma=0, r=0;
-
-  //ITERATIONS
-  for (int i = 0 ; i < nI ; i++){
-    for (int j = 0 ; j < nR ; j++){if (j%(nR/4) == 0){cout << X[j] << " "; }}
-    cout << endl;
-    t2=omp_get_wtime();
-    
-    Ah = parMult(A, h, nP);
+  //Iterations
+  for (int i = 0 ; i < nI ; i++){    
+    Ah = A.parallelProduct(h, nP);
     rau = -scal(g, h)/scal(h, Ah);
     X += h * rau;
     g_new = g + Ah * rau;
@@ -96,128 +66,96 @@ Vector GC(const CSRMatrix& A,
     h = -g + h * gamma;
     r = scal(g_new, g_new);
     if( r < eps ){return X;}
-    
-    t3 = omp_get_wtime();
-    log << "Itération\t" << i << ": R =\t" << r << ", t =\t" << t3 - t2 << " s" << endl; 
-  }
-
-  //MONITORING
-  t1 = omp_get_wtime() - t0;
-  log << "Temps d'execution total =\t" << t1 << " s" << endl;
-  log.close();
-  
+  } 
   return X;
 }
 
-//Gradient conjugué préconditionné par C
-Vector GCP(const CSRMatrix& A,
-	   const Vector& b,
-	   const Matrix& C,
-	   const int nP){
-
-  //PARAMETRES DU CALCUL
-  int nI = 100000;
-  double eps = 1e-5;
-  int nR = A.GetNumberOfRows();
-  Vector X(nR, 0.00000000000);
-
-  //MONITORING
-  ofstream log;
-  string n_str;
-  stringstream convert;
-  convert << nP;
-  n_str = convert.str();
-  string name = "TIME.txt";
-  log.open(name.c_str());
-  double t0=omp_get_wtime(), t1=0, t2=0, t3=0;
-
-  //INITIALISATION
-  Vector G = parMult(A, X, nP) - b;
-  Vector H = -C*G;  
-  Vector AH(nR), G_new(nR);
-  double rau=0, gamma=0, r=0;
-  
-  //ITERATIONS
-  for (int i = 0 ; i < nI ; i++){
-    for (int j = 0 ; j < nR ; j++){if (j%(nR/5) == 0){cout << X[j] << " "; }}
-    cout << endl;
-    t2=omp_get_wtime();
-    
-    AH = parMult(A, H, nP);
-    rau = -scal(G, H)/scal(H, AH);
-    X += H * rau;
-    G_new = G + AH * rau;
-    gamma = scalC(G_new, G_new, C) / scalC(G, G, C);
-    G = G_new;
-    H = -C*G + H * gamma;
-    r = scalC(G, G, C);
-    if( r < eps ){return X;}
-      
-    t3 = omp_get_wtime();
-    log << "Itération\t" << i << ": R =\t" << r << ", t =\t" << t3 - t2 << " s" << endl; 
-  }
-}
-
-Vector GCPDiag(const CSRMatrix& A,
+//Preconditionning with a diagonal matrix, Vector object
+Vector PGC(const CSRMatrix& A,
 	   const Vector& b,
 	   const Vector& C,
 	   const int nP){
-
-  //PARAMETRES DU CALCUL
+  //Parameters
   int nI = 2000;
   double eps = 1e-5;
   int nR = A.GetNumberOfRows();
   Vector X(nR, 0);
-
-  //MONITORING
-  ofstream log;
-  string n_str;
-  stringstream convert;
-  convert << nP;
-  n_str = convert.str();
-  string name = "TIME.txt";
-  log.open(name.c_str());
-  double t0=omp_get_wtime(), t1=0, t2=0, t3=0;
-
-  //INITIALISATION
+  //Initialization
   double t = omp_get_wtime();
-  int compteur = 0;
-  Vector G = parMult(A, X, nP) - b;
-  t = chrono(t, compteur, "Initialisation de G");
-  Vector H(nR);
-  for (int i = 0 ; i < nR ; i++){ H[i] = - C.Read(i) * G.Read(i);}
-  t = chrono(t, compteur, "Initialisation de H");
+  int inc = 0;
+  Vector G = A.parallelProduct(X, nP) - b;
+  t = chrono(t, inc, "G initialization");
+  Vector CG = vectProduct(C, G);
+  Vector H = - CG;
+  t = chrono(t, inc, "H initialization");
   Vector AH(nR), G_new(nR);
   double rau=0, gamma=0, r=0;
-  
-  //ITERATIONS
+  //Iterations
   for (int i = 0 ; i < nI ; i++){
-    if(i==0){t = chrono(t, compteur, "Ouverture des itérations");}
-    if(i!=0){for (int j = 0 ; j < nR ; j++){if (j%(nR/5) == 0){cout << X[j] << " "; }}; cout << endl;}
-    t2=omp_get_wtime();
-    if(i==0){t = chrono(t, compteur, "Enregistrement de X");}
-    
-    AH = parMult(A, H, nP);
-    if(i==0){t = chrono(t, compteur, "Produit A * H");}
+    if(i==0){t = chrono(t, inc, "Iterations start");}   
+    AH = A.parallelProduct(H, nP);
+    if(i==0){t = chrono(t, inc, "A * H product");}
     rau = -scal(G, H)/scal(H, AH);
-    if(i==0){t = chrono(t, compteur, "Calcul de rau");}
+    if(i==0){t = chrono(t, inc, "Rau computation");}
     X += H * rau;
-    if(i==0){t = chrono(t, compteur, "Actualisation de X");}
+    if(i==0){t = chrono(t, inc, "X update");}
     G_new = G + AH * rau;
-    if(i==0){t = chrono(t, compteur, "Calcul de G_new");}
+    if(i==0){t = chrono(t, inc, "G_new computation");}
     gamma = scalC(G_new, G_new, C) / scalC(G, G, C);
-    if(i==0){t = chrono(t, compteur, "Calcul de gamma");}
+    if(i==0){t = chrono(t, inc, "Gamma computation");}
     G = G_new;
-    Vector cg(nR);
-    for (int k = 0 ; k < nR ; k++){ cg[k] = C.Read(k) * G.Read(k);}
-    if(i==0){t = chrono(t, compteur, "Calcul de cg");}
-    H = -cg + H * gamma;
-    if(i==0){t = chrono(t, compteur, "Actualisation de H");}
+    CG = vectProduct(C,G);
+    if(i==0){t = chrono(t, inc, "CG update");}
+    H = -CG + H * gamma;
+    if(i==0){t = chrono(t, inc, "H update");}
     r = scalC(G, G, C);
-    if(i==0){t = chrono(t, compteur, "Calcul de R");}
+    if(i==0){t = chrono(t, inc, "R computation");}
     if( r < eps ){return X;}
-      
-    t3 = omp_get_wtime();
-    log << "Itér " << i << ":    \tR= " << r << ",        \tt = " << t3 - t2 << ",    \t|g| = " << G.norm() << endl; 
   }
+  return X;
+}
+
+//Preconditionning with a matrix, Matrix object
+Vector PGC(const CSRMatrix& A,
+	   const Vector& b,
+	   const Matrix& C,
+	   const int nP){
+  //Parameters
+  int nI = 2000;
+  double eps = 1e-5;
+  int nR = A.GetNumberOfRows();
+  Vector X(nR, 0);
+  //Initialization
+  double t = omp_get_wtime();
+  int inc = 0;
+  Vector G = A.parallelProduct(X, nP) - b;
+  t = chrono(t, inc, "G initialization");
+  Vector CG = C * G;
+  Vector H = - CG;
+  t = chrono(t, inc, "H initialization");
+  Vector AH(nR), G_new(nR);
+  double rau=0, gamma=0, r=0;
+  //Iterations
+  for (int i = 0 ; i < nI ; i++){
+    if(i==0){t = chrono(t, inc, "Iterations start");}   
+    AH = A.parallelProduct(H, nP);
+    if(i==0){t = chrono(t, inc, "A * H product");}
+    rau = -scal(G, H)/scal(H, AH);
+    if(i==0){t = chrono(t, inc, "Rau computation");}
+    X += H * rau;
+    if(i==0){t = chrono(t, inc, "X update");}
+    G_new = G + AH * rau;
+    if(i==0){t = chrono(t, inc, "G_new computation");}
+    gamma = scalC(G_new, G_new, C) / scalC(G, G, C);
+    if(i==0){t = chrono(t, inc, "Gamma computation");}
+    G = G_new;
+    CG = C * G;
+    if(i==0){t = chrono(t, inc, "CG update");}
+    H = -CG + H * gamma;
+    if(i==0){t = chrono(t, inc, "H update");}
+    r = scalC(G, G, C);
+    if(i==0){t = chrono(t, inc, "R computation");}
+    if( r < eps ){return X;}
+  }
+  return X;
 }

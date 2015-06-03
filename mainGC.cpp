@@ -1,48 +1,34 @@
-#include "vector.h"
-#include "csrmatrix.h"
-#include "gc.h"
-
-#include "omp.h"
-
 #include <cstdlib>
 #include <iostream>
 #include <stdio.h>
 #include <sstream>
 #include <fstream>
 
+#include "vector.h"
+#include "csrmatrix.h"
+#include "gc.h"
+
+#include "omp.h"
+
 using namespace std;
 
-void writeVectorData(const Vector& V, string fileName){
-  ofstream out;
-  out.open(fileName.c_str());
-  for(int i = 0 ; i < V.GetSize() ; i++){
-    out << V.Read(i) << endl;
-  }
-  out.close();
-}
-
 int main(int argc, char* argv[]){
-
-  //Initialisation des variables
+  //Variables
   const int nP = atoi(argv[1]);
   string varName = "SIZE";
   string SIZE(getenv(varName.c_str()));
   string dataPath = "/work/norgeot/";
 
-  //Initialisation des données
+  //Initialization
   CSRMatrix A(dataPath, SIZE, nP);
   Vector B(dataPath, SIZE);
 
-  //Gradient conjugué
-  
+  //Conjugate Gradient
   //Vector RGC = GC(A, B, nP);
-  //writeVectorData(RGC, "GC.data");
-  
-  //Gradient conjugué préconditionné par diagonale inverse
-  
+  //RGC.write("GC.data");
   Vector invDiag = (A.toDiagonal()).inv();
-  Vector RGCP = GCPDiag(A, B, invDiag, nP);
-  writeVectorData(RGCP, "test.data");
+  Vector RGCP = PGC(A, B, invDiag, nP);
+  RGCP.write("test.data");
 
   return 0;
 }

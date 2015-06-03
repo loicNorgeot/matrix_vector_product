@@ -1,6 +1,8 @@
 #include <cmath>
 #include <cassert>
 #include <string>
+#include <cstdlib>
+#include <fstream>
 
 #include "vector.h"
 #include "binaryIO.h"
@@ -172,16 +174,6 @@ void Vector::operator/=(double a){
   }
 }
 
-//Scalar product
-double Vector::operator*(const Vector& otherVector) const{
-  assert(mSize == otherVector.mSize);
-  double scp = 0.0;
-  for(int i=0;i<mSize;i++){
-    scp += mData[i] * otherVector.mData[i];
-  }
-  return scp;
-}
-
 
 ////////////////////////////////////////////
 //OTHER METHODS
@@ -198,11 +190,45 @@ Vector Vector::inv() const{
 }
 
 //Norm
-double Vector::norm(){
+double Vector::norm() const{
   double norm = 0.0;
   for(int i=0;i<mSize;i++){
     norm += mData[i] * mData[i];
   }
   norm = sqrt(norm);
   return norm;
+}
+
+//Writing
+void Vector::write(string fileName) const{
+  ofstream out;
+  out.open(fileName.c_str());
+  for(int i = 0 ; i < mSize ; i++){
+    out << mData[i] << endl;
+  }
+  out.close();
+}
+
+
+////////////////////////////////////////////
+//FRIEND FUNCTIONS
+
+//Scalar product
+double scalProduct(const Vector& v1, const Vector& v2){
+  assert(v1.mSize == v2.mSize);
+  double scp = 0.0;
+  for(int i=0;i<v1.mSize;i++){
+    scp += v1.mData[i] * v2.mData[i];
+  }
+  return scp;
+}
+
+//Vectorial product (member * member)
+Vector vectProduct(const Vector& v1, const Vector& v2){
+  assert(v1.mSize == v2.mSize);
+  Vector v(v1.mSize);
+  for(int i=0;i<v.GetSize();i++){
+    v[i] = v1.mData[i] * v2.mData[i];
+  }
+  return v;
 }

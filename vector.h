@@ -45,16 +45,20 @@ public:
   //Divide
   Vector operator/(double a) const;
   void operator/=(double a);
-  //Scalar Product
-  double operator*(const Vector& otherVector) const;
 
   //Other methods
   Vector inv() const;
-  double norm();
-  
+  double norm() const;
+  void write(string fileName) const;
+
+  //Friend functions
+  friend double scalProduct(const Vector& v1, const Vector& v2);
+  friend Vector vectProduct(const Vector& v1, const Vector& v2);
+
 };
 
+//Friend functions
+double scalProduct(const Vector& v1, const Vector& v2);
+Vector vectProduct(const Vector& v1, const Vector& v2);
+
 #endif
-
-
-

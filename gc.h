@@ -5,12 +5,14 @@
 #include "csrmatrix.h"
 #include "matrix.h"
 
-//PROTOTYPES
-Vector GC(const CSRMatrix& A, const Vector& b, const int nP);
-Vector GCP(const CSRMatrix& A, const Vector& b, const Matrix& C, const int nP);
-Vector GCPDiag(const CSRMatrix& A, const Vector& b, const Vector& C, const int nP);
+//Scalar Products
+double scalC(const Vector& v1, const Vector& v2, const Vector& C);
+double scalC(const Vector& v1, const Vector& v2, const Matrix& C);
+double scal(const Vector& v1, const Vector& v2);
 
-double scal(const Vector& V1, const Vector& V2);
-double scalC(const Vector& V1, const Vector& V2, const Matrix& C);
+//Conjugate Gradient
+Vector GC(const CSRMatrix& A, const Vector& b, const int nP);
+Vector PGC(const CSRMatrix& A, const Vector& b, const Vector& C, const int nP);
+Vector PGC(const CSRMatrix& A, const Vector& b, const Matrix& C, const int nP);
 
 #endif

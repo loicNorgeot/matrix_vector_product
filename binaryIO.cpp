@@ -18,12 +18,10 @@ vector<T> split(const string& line) {
 }
 
 
+///////////////////////////////////////////
+//WRITING
 
-//####################
-//      ECRITURE     #
-//####################
-
-//Ouverture d'un fichier binaire
+//Binary file opening
 FILE * bwopen(string fileName){
   FILE *file;
   file = fopen(fileName.c_str(),"wb");
@@ -31,7 +29,7 @@ FILE * bwopen(string fileName){
   return file;
 }
 
-//Surcharge de l'écriture d'un tableau dans un fichier
+//Overloading the writing methods
 void bwArray(int *X,
 	     int lX,
 	     string fileName){
@@ -75,7 +73,7 @@ void bwArray(unsigned int *X,
   fclose(file);
 }
 
-//Ecriture d'une matrice CSR en format binaire
+//Writing CSR elements in binary files
 void bwMatrix(unsigned int *IA,
 	      int *JA,
 	      double *A,
@@ -83,40 +81,38 @@ void bwMatrix(unsigned int *IA,
 	      unsigned int nnz,
 	      string outPath,
 	      string name){
-  //Ecriture du header
+  //Header
   ofstream out;
   string root = outPath + "matrix_" + name;
   out.open((root + "_H.data").c_str());
   out << nR << " " << nnz;
   out.close();
-  //Ecriture des tableaux
+  //Arrays
   bwArray(IA, nR + 1, root + "_IA.bin");
   bwArray(JA, nnz, root + "_JA.bin");
   bwArray(A, nnz, root + "_A.bin");
 }
 
-//Ecriture d'un vecteur en format binaire
+//Writing a Vector in binary files
 void bwVector(double *V,
 	      int nR,
 	      string outPath,
 	      string name){
-  //Ecriture du header
+  //Header
   ofstream out;
   string root = outPath + "vector_" + name;
   out.open((root + "_H.data").c_str());
   out << nR;
   out.close();
-  //Ecriture du vecteur
+  //Array
   bwArray(V, nR, root + "_V.bin");
 }
 
 
+///////////////////////////////////////////
+//READING
 
-//###################
-//      LECTURE     #
-//###################
-
-//Ouverture d'un fichier binaire en lecture
+//Read opening of a binary file
 FILE * bropen(string fileName){
   FILE *file;
   file = fopen(fileName.c_str(),"rb");
@@ -124,7 +120,7 @@ FILE * bropen(string fileName){
   return file;
 }
 
-//Surcharge de la lecture d'un tableau en binaire
+//Overloading the reading methods
 void brArray(int *& X,
 	     int lX,
 	     string fileName){
@@ -168,19 +164,20 @@ void brArray(unsigned int *& X,
   fclose(file);
 }
 
+//Gathering of header informations (nR and nnz)
 void getHeaderInfo(int& nR,
 		   unsigned int& nnz,
 		   string inPath,
 		   string name){
   int nRV = 0, nRM = 0;
-  //Header du vecteur
+  //Vector Header
   ifstream infile((inPath + "vector_" + name + "_H.data").c_str());
   string str;
   while(getline(infile, str)){
     vector<int> line = split<int>(str);
     nRV = line[0];
   }
-  //Header de la matrice
+  //Matrix header
   ifstream infileB((inPath + "matrix_" + name + "_H.data").c_str());
   string strB;
   while(getline(infileB, str)){
@@ -188,11 +185,12 @@ void getHeaderInfo(int& nR,
     nRM = line[0];
     nnz = (unsigned int)line[1];
   }
-  //Comparaison
+  //Comparing
   assert(nRM==nRV);
   nR = nRM;
 }
 
+//Reading a vector from binary files
 void brVector(double *& V,
 	      int nR,
 	      string inPath,
@@ -201,6 +199,7 @@ void brVector(double *& V,
   brArray(V, nR, inPath + "vector_" + name + "_V.bin");
 }
 
+//Reading a CSRMatrix from binary files
 void brMatrix(unsigned int *& IA,
 	      int *& JA,
 	      double *& A,
@@ -214,17 +213,16 @@ void brMatrix(unsigned int *& IA,
 }
 
 
+//////////////////////////////////////////////////////////
+//TESTING AND EXAMPLES
 
-//###############
-//     TESTS    #
-//###############
-
-void wExample(string outPath, string name){
+//Writing example
+void writingExample(string outPath,
+		    string name){
   //Variables
   const int nR = 10;
   const unsigned int nnz = 20;
-  
-  //Initialisation
+  //Initialization
   unsigned int *IA = new unsigned int[nR + 1];
   int *JA = new int[nnz];
   double *A = new double[nnz];
@@ -239,37 +237,33 @@ void wExample(string outPath, string name){
     JA[i] = i;
     A[i] = i * 0.5;
   }
-
-  //Ecriture
+  //Writing
   bwMatrix(IA, JA, A, nR, nnz, outPath, name);
   bwVector(V, nR, outPath, name);
-
   //Print
-  cout << "Tests d'écriture:" << endl;
+  cout << "Writing test:" << endl;
   cout << "nR = " << nR << endl;
   cout << "nnz = " << nnz << endl;
-  cout << "Ecriture terminée\n" << endl;
+  cout << "End of writing\n" << endl;
 }
 
-
-void rExample(string inPath, string name){
+//Reading example
+void readingExample(string inPath,
+		    string name){
   //Variables
   int nR=0;
   unsigned int nnz=0;
   getHeaderInfo(nR, nnz, inPath, name);
-
-  //Initialisation
+  //Initialization
   unsigned int *IA = new unsigned int[nR + 1];
   int *JA = new int[nnz];
   double *A = new double[nnz];
   double *V = new double[nR];
-
-  //Lecture
+  //Reading
   brMatrix(IA, JA, A, nR, nnz, inPath, name);
   brVector(V, nR, inPath, name);
-
   //Print
-  cout << "Tests d'écriture:" << endl;
+  cout << "Reading test:" << endl;
   cout << "nR = " << nR << endl;
   cout << "nnz = " << nnz << endl;
   cout << "IA = " << IA[0] << " ... " << IA[nR-1] << endl;
