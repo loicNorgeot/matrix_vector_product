@@ -44,6 +44,40 @@ Matrix::Matrix(int rows, int cols){
   }
 }
 
+//Identity or scalar
+Matrix::Matrix(int N, double val){
+  assert(N>0);
+  mNumRows = N;
+  mNumCols = N;
+  mData = new double* [mNumRows];
+  for(int i=0; i<mNumRows; i++){
+    mData[i] = new double [mNumCols];
+  }
+  for(int i=0; i<mNumRows; i++){
+    for(int j=0; j<mNumCols; j++){
+      if(i==j){mData[i][j] = val;}
+      else{mData[i][j] = 0.0;}
+    }
+  }
+}
+
+//Identity or scalar from a Vector
+Matrix::Matrix(const Vector& V){
+  assert(V.GetSize()>0);
+  mNumRows = V.GetSize();
+  mNumCols = V.GetSize();
+  mData = new double* [mNumRows];
+  for(int i=0; i<mNumRows; i++){
+    mData[i] = new double [mNumCols];
+  }
+  for(int i=0; i<mNumRows; i++){
+    for(int j=0; j<mNumCols; j++){
+      if(i==j){mData[i][j] = V.Read(i);}
+      else{mData[i][j] = 0.0;}
+    }
+  }
+}
+
 //Destructor
 Matrix::~Matrix(){
   for(int i=0; i<mNumRows; i++){
@@ -164,6 +198,108 @@ Matrix Matrix::operator*(const Matrix& m) const{
     }
   }
   return M;
+}
+
+
+////////////////////////////////////////////////////
+//SIZE MODIFICATION, INSERTIONS...
+
+//ROWS
+
+//Adding a new row
+void Matrix::addRow(){
+  //Temporary array declaration
+  double **newData = new double*[mNumRows + 1];
+  for (int j = 0 ; j < mNumRows ; j++){
+    newData[j] = new double[mNumCols];
+  }
+  //Temporary array initialization
+  for (int i = 0 ; i < mNumRows ; i++){
+    for (int j = 0 ; j < mNumCols ; j++){
+      newData[i][j] = mData[i][j];
+    }
+    delete[] mData[i];
+  }
+  delete[] mData;
+  //Last row initialization and variables modification
+  for (int j = 0 ; j < mNumCols ; j++){
+    newData[mNumRows][j] = 0.0;
+  }
+  mData = newData;
+  mNumRows ++;
+}
+
+//Adding a new row from a vector
+void Matrix::addRow(const Vector& newRow){
+  assert(newRow.GetSize() == mNumCols);
+  //Temporary array declaration
+  double **newData = new double*[mNumRows + 1];
+  for (int j = 0 ; j < mNumRows ; j++){
+    newData[j] = new double[mNumCols];
+  }
+  //Temporary array initialization
+  for (int i = 0 ; i < mNumRows ; i++){
+    for (int j = 0 ; j < mNumCols ; j++){
+      newData[i][j] = mData[i][j];
+    }
+    delete[] mData[i];
+  }
+  delete[] mData;
+  //Vector elements as last row
+  for (int j = 0 ; j < mNumCols ; j++){
+    newData[mNumRows][j] = newRow.Read(j);
+  }
+  mData = newData;
+  mNumRows ++;
+}
+
+//COLUMNS
+
+//Adding a new column
+void Matrix::addCol(){
+  //Temporary array declaration
+  double **newData = new double*[mNumRows];
+  for (int j = 0 ; j < mNumRows ; j++){
+    newData[j] = new double[mNumCols + 1];
+  }
+  //Temporary array initialization
+  for (int i = 0 ; i < mNumRows ; i++){
+    for (int j = 0 ; j < mNumCols ; j++){
+      newData[i][j] = mData[i][j];
+    }
+    delete[] mData[i];
+  }
+  delete[] mData;
+  //Last row initialization and variables modification
+  for (int i = 0 ; i < mNumRows ; i++){
+    newData[i][mNumCols] = 0.0;
+  }
+  mData = newData;
+  mNumCols ++;
+}
+
+//Adding a new column from a vector
+void Matrix::addRow(const Vector& newCol){
+  assert(newCol.GetSize() == mNumRows);
+  //Temporary array declaration
+  double **newData = new double*[mNumRows];
+  for (int j = 0 ; j < mNumRows ; j++){
+    newData[j] = new double[mNumCols + 1];
+  }
+  //Temporary array initialization
+  for (int i = 0 ; i < mNumRows ; i++){
+    for (int j = 0 ; j < mNumCols ; j++){
+      newData[i][j] = mData[i][j];
+    }
+    delete[] mData[i];
+  }
+  delete[] mData;
+  //Last column initialization and variables modification
+  for (int i = 0 ; i < mNumRows ; i++){
+    newData[i][mNumCols] = newCol[i];
+  }
+  mData = newData;
+  mNumCols ++;
 }
 
 

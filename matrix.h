@@ -18,6 +18,8 @@ public:
   //Constructors and destructors
   Matrix(const Matrix& otherMatrix);
   Matrix(int rows, int cols);
+  Matrix(int N, double val);
+  Matrix(const Vector& V)
   ~Matrix();
 
   //Private variables accessing
@@ -33,6 +35,12 @@ public:
   Matrix operator-(const Matrix& m) const;
   Matrix operator*(double a) const;
   Matrix operator*(const Matrix& m) const;
+
+  //Size modification, insertions...
+  void addRow();
+  void addRow(const Vector& newRow);
+  void addCol();
+  void addRow(const Vector& newCol);
 
   //Friend functions
   friend Vector operator*(const Matrix& m, const Vector& v);
