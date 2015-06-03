@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 
-#Teste que le premier argument soit "openmp" ou "conjugate"
-if [ "$1" != "openmp" ] && [ "$1" != "conjugate" ]
+#Teste que le premier argument soit "openmp" ou "conjugate" ou "product" 
+if [ "$1" != "openmp" ] && [ "$1" != "conjugate" ] && [ "$1" != "product" ]
 then
-    echo "Error: First argument must be \"openmp\" or \"conjugate\""
+    echo "Error: First argument must be \"openmp\" or \"conjugate\" or \"product\""
     exit
 fi
 
-#Si le premier argument est openmp OU CONJUGATE, on attend deux arguments en plus
+#On attend deux arguments en plus
 if [ "$#" != 3 ]
 then
     echo -e "Error: Needs two other arguments:\n\tSize of the matrix (i.e. 1e+07)\n\tNumber of threads"
@@ -33,6 +33,9 @@ then
 elif [ "$1" = "conjugate" ]
 then
     make main -f MakefileGC
+elif [ "$1" = "product" ]
+then
+    make main -f MakefileProduct
 fi
 
 qsub -v nP=$3,size=$2 -l select=1:ncpus=$3 script.sh
