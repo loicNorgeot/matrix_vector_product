@@ -31,9 +31,9 @@ Matrix::Matrix(const Matrix& otherMatrix){
 Matrix::Matrix(const Vector& V){
   mNumRows = V.GetSize();
   mNumCols = 1;
-  mData = new double**[mNumRows];
+  mData = new double*[mNumRows];
   for(int i=0; i<mNumRows; i++){
-    mData[i] = new double*[mNumCols];
+    mData[i] = new double[mNumCols];
   }
   for(int i=0; i<mNumRows; i++){
     mData[i][0] = V.Read(i);
@@ -45,9 +45,9 @@ Matrix::Matrix(int size){
   assert(size>0);
   mNumRows = size;
   mNumCols = size;
-  mData = new double* [mNumRows];
+  mData = new double*[mNumRows];
   for(int i=0; i<mNumRows; i++){
-    mData[i] = new double [mNumCols];
+    mData[i] = new double[mNumCols];
   }
   for(int i=0; i<mNumRows; i++){
     for(int j=0; j<mNumCols; j++){
@@ -62,9 +62,9 @@ Matrix::Matrix(int rows, int cols){
   assert(cols>0);
   mNumRows = rows;
   mNumCols = cols;
-  mData = new double* [mNumRows];
+  mData = new double*[mNumRows];
   for(int i=0; i<mNumRows; i++){
-    mData[i] = new double [mNumCols];
+    mData[i] = new double[mNumCols];
   }
   for(int i=0; i<mNumRows; i++){
     for(int j=0; j<mNumCols; j++){
@@ -201,7 +201,7 @@ Matrix Matrix::operator*(const Matrix& m) const{
 
 //Deleting a row
 void Matrix::delRow(int nRowsToDelete){
-  newN = mNumRows - nRowsToDelete;
+  int newN = mNumRows - nRowsToDelete;
   //Temporary array declaration
   double **newData = new double*[newN];
   for (int j = 0 ; j < newN ; j++){
@@ -221,7 +221,7 @@ void Matrix::delRow(int nRowsToDelete){
 
 //Adding a new row
 void Matrix::addRow(int nRowsToAdd){
-  newN = mNumRows + nRowsToAdd
+  int newN = mNumRows + nRowsToAdd;
   //Temporary array declaration
   double **newData = new double*[newN];
   for (int j = 0 ; j < newN ; j++){
@@ -273,7 +273,7 @@ void Matrix::addRow(const Vector& newRow){
 
 //Deleting a column
 void Matrix::delCol(int nColsToDelete){
-  newN = mNumCols - nColsToDelete;
+  int newN = mNumCols - nColsToDelete;
   //Temporary array declaration
   double **newData = new double*[mNumRows];
   for (int j = 0 ; j < mNumRows ; j++){
@@ -293,7 +293,7 @@ void Matrix::delCol(int nColsToDelete){
 
 //Adding a new column
 void Matrix::addCol(int nColsToAdd){
-  newN = mNumCols + nColsToAdd;
+  int newN = mNumCols + nColsToAdd;
   //Temporary array declaration
   double **newData = new double*[mNumRows];
   for (int j = 0 ; j < mNumRows ; j++){
@@ -335,7 +335,7 @@ void Matrix::addCol(const Vector& newCol){
   delete[] mData;
   //Last column initialization and variables modification
   for (int i = 0 ; i < mNumRows ; i++){
-    newData[i][mNumCols] = newCol[i];
+    newData[i][mNumCols] = newCol.Read(i);
   }
   mData = newData;
   mNumCols ++;
@@ -343,10 +343,10 @@ void Matrix::addCol(const Vector& newCol){
 
 //Resizing the whole matrix
 void Matrix::resize(int newRows, int newCols){
-  if(newRows > mNumRows){this.addRow(newRows - mNumRows);}
-  else if(newRows < mNumRows){this.delRow(mNumRows - newRows);}
-  else if(newCols > mNumCols){this.addCol(newCols - mNumCols);}
-  else if(newCols < mNumCols){this.delCol(mNumCols - newCols);}
+  if(newRows > mNumRows){this->addRow(newRows - mNumRows);}
+  else if(newRows < mNumRows){this->delRow(mNumRows - newRows);}
+  else if(newCols > mNumCols){this->addCol(newCols - mNumCols);}
+  else if(newCols < mNumCols){this->delCol(mNumCols - newCols);}
 }
 
 
@@ -377,7 +377,7 @@ Vector Matrix::col(int col){
 
 //Identity or scalar
 Matrix ID(int size, double val){
-  M = Matrix(size, size);
+  Matrix M(size, size);
   for(int i=0; i<M.mNumRows; i++){
     for(int j=0; j<M.mNumCols; j++){
       if(i==j){
@@ -391,7 +391,7 @@ Matrix ID(int size, double val){
 //Identity or scalar from a Vector
 Matrix ID(const Vector& V){
   assert(V.GetSize()>0);
-  M = Matrix(size, size);
+  Matrix M(V.GetSize(), V.GetSize());
   for(int i=0; i<M.mNumRows; i++){
     for(int j=0; j<M.mNumCols; j++){
       if(i==j){

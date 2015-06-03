@@ -42,12 +42,12 @@ public:
   void addRow(const Vector& newRow);
   void delCol(int nColsToDelete = 1);
   void addCol(int nColsToAdd = 1);
-  void addRow(const Vector& newCol);
+  void addCol(const Vector& newCol);
   void resize(int newRows, int newCols);
 
   //Extracting
-  Vector Matrix::row(int row);
-  Vector Matrix::col(int col);
+  Vector row(int row);
+  Vector col(int col);
 
   //Friend functions
   //Identity
