@@ -1,23 +1,15 @@
+#include <cmath>
+#include <cassert>
+#include <string>
+
 #include "vector.h"
 #include "binaryIO.h"
 
-#include <cmath>
-#include <iostream>
-#include <cassert>
-#include <vector>
-#include <string>
-#include <iterator>
-#include <sstream>
-#include <fstream>
-#include <cstdlib>
-
 using namespace std;
 
-template<typename T>
-vector<T> split(const string& line) {
-  istringstream is(line);
-  return vector<T>(istream_iterator<T>(is), istream_iterator<T>());
-}
+
+///////////////////////////////////////////
+//CONSTRUCTORS & DESTRUCTOR
 
 //Copy
 Vector::Vector(const Vector& otherVector){
@@ -28,7 +20,18 @@ Vector::Vector(const Vector& otherVector){
   }
 }
 
-//Size constructor
+//Size
+Vector::Vector(int size){
+  mData = NULL;
+  assert(size>0);
+  mSize = size;
+  mData = new double[mSize];
+  for (int i = 0; i<mSize; i++){
+    mData[i] = 0;
+  }
+}
+
+//Size and Value
 Vector::Vector(int size, double value){
   mData = NULL;
   assert(size>0);
@@ -39,10 +42,9 @@ Vector::Vector(int size, double value){
   }
 }
 
-//File constructor
+//File
 Vector::Vector(string inPath, string name) {
   mData = NULL;
-  //Variables
   int nR=0;
   unsigned int nnz=0;
   getHeaderInfo(nR, nnz, inPath, name);
@@ -57,12 +59,23 @@ Vector::~Vector(){
 }
 
 
+///////////////////////////////////////////////////
+//READING AND EVALUATING
+
+//Size return
 int Vector::GetSize() const{return mSize;}
 
+//Assigning and reading
 double& Vector::operator[](int i){return mData[i];}
 
+//Read only
 double Vector::Read(int i) const{return mData[i];}
 
+
+//////////////////////////////////////////////////////
+//OPERATORS OVERLOADING
+
+//Equals
 Vector& Vector::operator=(const Vector& otherVector){
   assert(mSize == otherVector.mSize);
   for(int i=0;i<mSize;i++){
@@ -71,6 +84,7 @@ Vector& Vector::operator=(const Vector& otherVector){
   return *this;
 }
 
+//Addition
 Vector Vector::operator+() const{
   Vector v(mSize);
   for(int i=0; i<mSize;i++){
@@ -78,15 +92,6 @@ Vector Vector::operator+() const{
   }
   return v;
 }
-
-Vector Vector::operator-() const{
-  Vector v(mSize);
-  for(int i=0; i<mSize;i++){
-    v[i] = -mData[i];
-  }
-  return v;
-}
-
 Vector Vector::operator+(const Vector& v1) const{
   assert(mSize == v1.mSize);
   Vector v(mSize);
@@ -95,7 +100,28 @@ Vector Vector::operator+(const Vector& v1) const{
   }
   return v;
 }
+Vector Vector::operator+(double a) const{
+  Vector v(mSize);
+  for(int i=0;i<mSize;i++){
+    v[i] = mData[i] + a;
+  }
+  return v;
+}
+void Vector::operator+=(const Vector& v1){
+  assert(mSize == v1.mSize);
+  for(int i=0;i<mSize;i++){
+    mData[i] += v1.mData[i];
+  }
+}
 
+//Substraction
+Vector Vector::operator-() const{
+  Vector v(mSize);
+  for(int i=0; i<mSize;i++){
+    v[i] = -mData[i];
+  }
+  return v;
+}
 Vector Vector::operator-(const Vector& v1) const{
   assert(mSize == v1.mSize);
   Vector v(mSize);
@@ -104,22 +130,13 @@ Vector Vector::operator-(const Vector& v1) const{
   }
   return v;
 }
-
-Vector Vector::operator*(double a) const{
+Vector Vector::operator-(double a) const{
   Vector v(mSize);
   for(int i=0;i<mSize;i++){
-    v[i]=a*mData[i];
+    v[i] = mData[i] - a;
   }
   return v;
 }
-
-void Vector::operator+=(const Vector& v1){
-  assert(mSize == v1.mSize);
-  for(int i=0;i<mSize;i++){
-    mData[i] += v1.mData[i];
-  }
-}
-
 void Vector::operator-=(const Vector& v1){
   assert(mSize == v1.mSize);
   for(int i=0;i<mSize;i++){
@@ -127,13 +144,49 @@ void Vector::operator-=(const Vector& v1){
   }
 }
 
+//Product
+Vector Vector::operator*(double a) const{
+  Vector v(mSize);
+  for(int i=0;i<mSize;i++){
+    v[i]=a*mData[i];
+  }
+  return v;
+}
 void Vector::operator*=(double a){
   for(int i=0;i<mSize;i++){
     mData[i] *= a;
   }
 }
 
+//Division
+Vector Vector::operator/(double a) const{
+  Vector v(mSize);
+  for(int i=0;i<mSize;i++){
+    v[i]=mData[i]/a;
+  }
+  return v;
+}
+void Vector::operator/=(double a){
+  for(int i=0;i<mSize;i++){
+    mData[i] /= a;
+  }
+}
 
+//Scalar product
+double Vector::operator*(const Vector& otherVector) const{
+  assert(mSize == otherVector.mSize);
+  double scp = 0.0;
+  for(int i=0;i<mSize;i++){
+    scp += mData[i] * otherVector.mData[i];
+  }
+  return scp;
+}
+
+
+////////////////////////////////////////////
+//OTHER METHODS
+
+//Inverse
 Vector Vector::inv() const{
   Vector v(mSize);
   for(int i=0;i<mSize;i++){
@@ -144,6 +197,7 @@ Vector Vector::inv() const{
   return v;
 }
 
+//Norm
 double Vector::norm(){
   double norm = 0.0;
   for(int i=0;i<mSize;i++){

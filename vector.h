@@ -1,39 +1,60 @@
-//Header de la classe vector
 #ifndef VECTORHEADERDEF
 #define VECTORHEADERDEF
 
-#include <iostream>
 #include <string>
+
+using namespace std;
 
 class Vector{
 
 private:
+
   double* mData;
   int mSize;
 
 public:
+
+  //Constructors and destructors
   Vector(const Vector& otherVector);
-  Vector(int size, double value=0.0);
-  Vector(std::string inPath, std::string name);
+  Vector(int size);
+  Vector(int size, double value);
+  Vector(string inPath, string name);
   ~Vector();
 
+  //Accessing and assigning
   int GetSize() const;
-
   double& operator[](int i);
   double Read(int i) const;
 
+  //Operators overloading
+  //Equals
   Vector& operator=(const Vector& otherVector);
-  Vector operator-() const;
+  //Addition
   Vector operator+() const;
-  Vector operator-(const Vector& v1) const;
   Vector operator+(const Vector& v1) const;
-  void operator-=(const Vector& v1);
+  Vector operator+(double a) const;
   void operator+=(const Vector& v1);
-  void operator*=(double a);
+  //Substraction
+  Vector operator-() const;
+  Vector operator-(const Vector& v1) const;
+  Vector operator-(double a) const;
+  void operator-=(const Vector& v1);
+  //Product
   Vector operator*(double a) const;
+  void operator*=(double a);
+  //Divide
+  Vector operator/(double a) const;
+  void operator/=(double a);
+  //Scalar Product
+  double operator*(const Vector& otherVector) const;
 
+  //Other methods
   Vector inv() const;
   double norm();
+  
 };
 
 #endif
+
+
+
