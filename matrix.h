@@ -36,14 +36,14 @@ public:
   Matrix operator*(double a) const;
   Matrix operator*(const Matrix& m) const;
 
-  //Appending
-  void delRow(int nRowsToDelete = 1);
-  void addRow(int nRowsToAdd = 1);
-  void addRow(const Vector& newRow);
-  void delCol(int nColsToDelete = 1);
-  void addCol(int nColsToAdd = 1);
-  void addCol(const Vector& newCol);
+  //Appending, size modifications
   void resize(int newRows, int newCols);
+  void delRow(int nRowsToDel=1);
+  void addRow(int nRowsToAdd=1);
+  void addCol(int nColsToAdd=1);
+  void delCol(int nColsToDel=1);
+  void addRow(const Vector& newRow);
+  void addCol(const Vector& newCol);
 
   //Extracting
   Vector row(int row);
