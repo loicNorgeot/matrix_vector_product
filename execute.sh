@@ -27,15 +27,7 @@ fi
 module load mpt/2.11
 module load intel-compilers-15/15.0.0.090
 
-if [ "$1" = "openmp" ]
-then
-    make main -f MakefileOpenMP
-elif [ "$1" = "conjugate" ]
-then
-    make main -f MakefileGC
-elif [ "$1" = "product" ]
-then
-    make main -f MakefileProduct
-fi
+export ARG=$1
+make main
 
 qsub -v nP=$3,size=$2 -l select=1:ncpus=$3 script.sh
