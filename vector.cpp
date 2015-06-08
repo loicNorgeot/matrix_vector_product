@@ -22,17 +22,6 @@ Vector::Vector(const Vector& otherVector){
   }
 }
 
-//Size
-Vector::Vector(int size){
-  mData = NULL;
-  assert(size>0);
-  mSize = size;
-  mData = new double[mSize];
-  for (int i = 0; i<mSize; i++){
-    mData[i] = 0;
-  }
-}
-
 //Size and Value
 Vector::Vector(int size, double value){
   mData = NULL;
@@ -172,6 +161,29 @@ void Vector::operator/=(double a){
   for(int i=0;i<mSize;i++){
     mData[i] /= a;
   }
+}
+
+
+////////////////////////////////////////////
+//ADDING AND DELETING ELEMENTS
+
+void Vector::resize(int newSize){
+  int diff = newSize - mSize;
+  int resizeSize=0;
+  double *newData = new double[newSize];
+  if(newSize >= mSize){resizeSize = mSize;}
+  else{resizeSize = newSize;}
+  for(int i = 0 ; i < resizeSize ; i++){
+    newData[i] = mData[i];
+  }
+  delete[] mData;
+  mData = newData;
+  mSize++;
+}
+
+void Vector::addVal(double a){
+  this->resize(mSize + 1);
+  mData[mSize-1] = a;
 }
 
 

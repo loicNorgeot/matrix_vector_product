@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cassert>
 #include <string>
+#include <fstream>
+#include <cstdlib>
 
 #include "matrix.h"
 #include "vector.h"
@@ -103,9 +105,9 @@ int Matrix::GetNumberOfCols() const{
 double& Matrix::operator()(int i, int j){
   assert(i>0);
   assert(j>0);
-  assert(i < mNumRows);
-  assert(j < mNumCols);
-  return mData[i][j];
+  assert(i < mNumRows+1);
+  assert(j < mNumCols+1);
+  return mData[i-1][j-1];
 }
 
 //Equals
@@ -178,18 +180,17 @@ Matrix Matrix::operator*(double a) const{
 //Matrix multiplication
 Matrix Matrix::operator*(const Matrix& m) const{
   //Dimension check
-  assert(mNumRows == m.mNumCols);
   assert(mNumCols == m.mNumRows);
   //Computation
   int n = mNumRows;
-  Matrix M(n, n);
+  Matrix M(n, m.mNumCols);
   for(int i=0;i<n;i++){
-    for(int j=0;j<n;j++){
+    for(int j=0;j<m.mNumCols;j++){
       double product = 0;
       for (int k = 0; k < mNumCols ; k++){
 	product += mData[i][k] * m.mData[k][j];
       }
-      M(i,j) = product;
+      M(i+1, j+1) = product;
     }
   }
   return M;
@@ -204,24 +205,25 @@ void Matrix::resize(int newRows, int newCols){
   int colsToAdd = newCols - mNumCols;
   int rowsToAdd = newRows - mNumRows;
 
-  //Temporary array declaration
-  double **newData = new double*[newRows];
-  for (int j = 0 ; j < newRows ; j++){
-    newData[j] = new double[newCols];
-  }
-  //Temporary array initialization
+  //Variables
   int resizeRows=0, resizeCols=0;
   if(colsToAdd>=0){resizeCols = mNumCols;}
   else{resizeCols = newCols;}
   if(rowsToAdd>=0){resizeRows = mNumRows;}
   else{resizeRows = newRows;}
+  double **newData = new double*[newRows];
+  for (int i = 0 ; i < newRows ; i++){
+    newData[i] = new double[newCols];
+  }
+
+  //SameSize initialisation
   for (int i = 0 ; i < mNumRows ; i++){
     if (i < resizeRows){
       for (int j = 0 ; j < resizeCols ; j++){
-	newData[i][j] = mData[i][j];
+        newData[i][j] = mData[i][j];
       }
+      delete mData[i];
     }
-    delete[] mData[i];
   }
   delete[] mData;
   //Adding 0 in the newly created spaces
@@ -235,30 +237,53 @@ void Matrix::resize(int newRows, int newCols){
       newData[i][j] = 0.0;
     }
   }
-  //Recording the changes
-  mData = newData;
-  mNumCols = newCols;
+
+  double **mData = new double*[newRows];
+  //SameSize initialisation
+  for (int i = 0 ; i < newRows ; i++){
+    mData[i] = new double[newCols];
+  }
+  for (int i = 0 ; i < newRows ; i++){
+    for (int j = 0 ; j < newCols ; j++){
+      mData[i][j] = newData[i][j];
+    }
+  }
+
+  for (int i = 0 ; i < newRows ; i++){
+    delete newData[i];
+  }
+  delete[] newData;
+
   mNumRows = newRows;
+  mNumCols = newCols;
 }
 
 //Deleting rows
-void Matrix::delRow(int nRowsToDel){this->resize(mNumRows-nRowsToDel, mNumCols);}
+void Matrix::delRow(int nRowsToDel){
+  this->resize(mNumRows-nRowsToDel, mNumCols);
+}
 
 //Adding rows
-void Matrix::addRow(int nRowsToAdd){this->resize(mNumRows+nRowsToAdd, mNumCols);}
+void Matrix::addRow(int nRowsToAdd){
+  this->resize(mNumRows+nRowsToAdd, mNumCols);
+}
 
 //Adding columns
-void Matrix::addCol(int nColsToAdd){this->resize(mNumRows, mNumCols+nColsToAdd);}
+void Matrix::addCol(int nColsToAdd){
+  this->resize(mNumRows, mNumCols+nColsToAdd);
+}
 
 //Deleting columns
-void Matrix::delCol(int nColsToDel){this->resize(mNumRows, mNumCols-nColsToDel);}
+void Matrix::delCol(int nColsToDel){
+  this->resize(mNumRows, mNumCols-nColsToDel);
+}
 
 //Adding a new row from a vector
 void Matrix::addRow(const Vector& newRow){
   assert(newRow.GetSize() == mNumCols);
   this->addRow();
   for(int j = 0 ; j < mNumCols ; j++){
-    mData[mNumRows][j] = newRow.Read(j);
+    mData[mNumRows-1][j] = newRow.Read(j);
   }
 }
 
@@ -267,7 +292,7 @@ void Matrix::addCol(const Vector& newCol){
   assert(newCol.GetSize() == mNumRows);
   this->addCol();
   for(int i = 0 ; i < mNumRows ; i++){
-    mData[i][mNumCols] = newCol.Read(i);
+    mData[i][mNumCols-1]= newCol.Read(i);
   }
 }
 
@@ -354,4 +379,21 @@ Vector operator *(const Vector& v, const Matrix& m){
     }
   }
   return new_v;
+}
+
+
+///////////////////////////////////////////////////////////
+//OTHER FUNCTIONS
+
+//Writing
+void Matrix::write(string fileName) const{
+  ofstream out;
+  out.open(fileName.c_str());
+  for(int i = 0 ; i < mNumRows ; i++){
+    for(int j = 0 ; j < mNumCols ; j++){
+      out << mData[i][j] << ", ";
+    }
+    out << endl;
+  }
+  out.close();
 }

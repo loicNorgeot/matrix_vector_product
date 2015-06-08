@@ -16,8 +16,7 @@ public:
 
   //Constructors and destructors
   Vector(const Vector& otherVector);
-  Vector(int size);
-  Vector(int size, double value);
+  Vector(int size, double value=0.0);
   Vector(string inPath, string name);
   ~Vector();
 
@@ -45,6 +44,10 @@ public:
   //Divide
   Vector operator/(double a) const;
   void operator/=(double a);
+
+  //Size modifications
+  void addVal(double a=0.0);
+  void resize(int newSize);
 
   //Other methods
   Vector inv() const;

@@ -51,11 +51,14 @@ public:
 
   //Friend functions
   //Identity
-  friend Matrix ID(int size, double val);
+  friend Matrix ID(int size, double val=1.0);
   friend Matrix ID(const Vector& V);
   //Vector multiplication
   friend Vector operator*(const Matrix& m, const Vector& v);
   friend Vector operator *(const Vector& v, const Matrix& m);
+
+  //Other functions
+  void write(string fileName) const;
   
   //CSRMatrix class as a friend
   friend class CSRMatrix;

@@ -13,11 +13,6 @@ else ifeq (${ARG},openmp)
   SRC= vector.cpp csrmatrix.cpp binaryIO.cpp
   MAINFILE=mainOpenMP
 
-#GMRES
-else ifeq (${ARG},gmres)
-  SRC = vector.cpp csrmatrix.cpp matrix.cpp chrono.cpp binaryIO.cpp gmres.cpp
-  MAINFILE=mainGMRES
-
 else
   echo "PROBLEME!!!" 
 
